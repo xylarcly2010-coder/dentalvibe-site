@@ -1,4 +1,48 @@
 ﻿(function () {
+  const THEME_STORAGE_KEY = "dentalvibe.theme.v1";
+  const themeToggle = document.querySelector("#theme-toggle");
+  const themeLabel = document.querySelector("#theme-label");
+  const themeColor = document.querySelector('meta[name="theme-color"]');
+  const systemTheme = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch (error) {
+    console.error("Could not read the saved theme preference.", error);
+  }
+
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
+    document.body.dataset.theme = isDark ? "dark" : "light";
+    if (themeToggle) {
+      themeToggle.setAttribute("aria-pressed", String(isDark));
+      themeToggle.setAttribute("aria-label", "Switch to " + (isDark ? "light" : "dark") + " mode");
+    }
+    if (themeLabel) themeLabel.textContent = (isDark ? "Light" : "Dark") + " mode";
+    if (themeColor) themeColor.content = isDark ? "#17231e" : "#f7f8f2";
+  }
+
+  applyTheme(savedTheme === "light" || savedTheme === "dark" ? savedTheme : (systemTheme && systemTheme.matches ? "dark" : "light"));
+  if (systemTheme) {
+    const onSystemChange = function (event) {
+      if (savedTheme === null) applyTheme(event.matches ? "dark" : "light");
+    };
+    if (systemTheme.addEventListener) systemTheme.addEventListener("change", onSystemChange);
+    else if (systemTheme.addListener) systemTheme.addListener(onSystemChange);
+  }
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      const theme = document.body.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(theme);
+      savedTheme = theme;
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, theme);
+      } catch (error) {
+        console.error("Could not save the theme preference.", error);
+      }
+    });
+  }
+
   const config = window.DENTALVIBE_SUPABASE_CONFIG;
   const supabaseApi = window.supabase;
   const feedback = document.querySelector("#reset-feedback");
@@ -183,3 +227,4 @@
     }
   });
 })();
+
