@@ -524,9 +524,9 @@ document.querySelector("#signin-form").addEventListener("submit", async (event) 
   try {
     requireSupabaseClient();
     const formData = new FormData(form);
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: String(formData.get("email")).trim().toLowerCase(),
-      password: String(formData.get("password")),
+    const email = String(formData.get("email")).trim().toLowerCase();     const password = String(formData.get("password"));     form.elements.email.value = "";     form.elements.password.value = "";     const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
     });
     if (error) throw error;
     await continueSignedInUser(data.user);
