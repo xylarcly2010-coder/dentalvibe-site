@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="script.js" defer></script>
+    <script src="auth-session.js" defer></script>     <script src="script.js" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -297,7 +297,7 @@
             <input id="signin-password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required minlength="8" />
             <button type="button" class="password-toggle" data-toggle-password="signin-password" aria-label="Show password" aria-pressed="false">Show</button>
           </div>
-          <button type="submit" class="button button-primary signin-submit">Sign in <span>→</span></button>
+          <label class="remember-option" for="signin-remember"><input id="signin-remember" name="remember" type="checkbox" checked /><span>Remember me on this device</span></label><button type="submit" class="button button-primary signin-submit">Sign in <span>→</span></button>
         </form>
         <form id="totp-login-form" hidden>
           <label for="totp-login-code">Authenticator code</label>
@@ -321,7 +321,7 @@
             <input id="register-confirm-password" name="confirm-password" type="password" placeholder="Enter your password again" autocomplete="new-password" required minlength="8" />
             <button type="button" class="password-toggle" data-toggle-password="register-confirm-password" aria-label="Show password" aria-pressed="false">Show</button>
           </div>
-          <button type="submit" class="button button-primary signin-submit">Create account <span>→</span></button>
+          <label class="remember-option" for="register-remember"><input id="register-remember" name="remember" type="checkbox" checked /><span>Remember me on this device</span></label><button type="submit" class="button button-primary signin-submit">Create account <span>→</span></button>
         </form>
         <div class="account-panel" id="account-panel" hidden>
           <div id="account-overview" class="account-overview">
@@ -382,7 +382,7 @@
         <p class="signin-feedback" id="signin-feedback" role="status"></p>
         <p class="signup-note" id="signup-note">New to Dentalvibe? <button type="button" class="text-button" id="create-account">Create an account</button></p>
         <p class="signup-note" id="signin-note" hidden>Already have an account? <button type="button" class="text-button" id="switch-to-signin">Sign in</button></p>
-        <p class="auth-storage-note">Customer accounts use Supabase Auth and appointment requests are stored in the clinic database. Previous browser-only demo accounts are not imported. Email confirmation may be required.</p>
+        <p class="auth-storage-note">Accounts and names are stored securely with Supabase Auth; appointments are stored in the clinic database. “Remember me” keeps your sign-in on this device. Passwords are never stored by this site. Email confirmation may be required.</p>
       </section>
     </div>
   </body>
