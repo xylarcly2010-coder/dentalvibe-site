@@ -531,7 +531,7 @@ document.querySelector("#signin-form").addEventListener("submit", async (event) 
     if (error) throw error;
     await continueSignedInUser(data.user);
   } catch (error) {
-    if (error.message === "Invalid login credentials") {       setFeedback("Invalid email or password. If you’re new, create an account first.", true);     } else {       setFeedback(`Sign-in failed: ${error.message}`, true);     }
+    form.elements.email.value = "";     form.elements.password.value = "";     if (error.message === "Invalid login credentials") {       setFeedback("Invalid email or password. If you’re new, create an account first.", true);     } else {       setFeedback(`Sign-in failed: ${error.message}`, true);     }
   } finally {
     submitButton.disabled = false;
   }
