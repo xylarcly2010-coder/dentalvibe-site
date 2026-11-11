@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Meet your Tagum City dentist, explore dental services, and manage appointments in one place."
+    />
+    <meta name="theme-color" content="#f7f8f2" />
+    <title>Dentalvibe — Care that feels good</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#" aria-label="Dentalvibe home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <path d="M20 5.5c-2.8 0-5.3 1.7-8.6 1.7C6.2 7.2 4.5 11 5.5 17c1.3 8 5.5 17.2 9.1 17.2 2.7 0 2.4-9.2 5.4-9.2s2.7 9.2 5.4 9.2c3.6 0 7.8-9.2 9.1-17.2 1-6-0.7-9.8-5.9-9.8-3.3 0-5.8-1.7-8.6-1.7Z" fill="currentColor" />
+            <path d="M15.2 14.8h9.6M20 10v9.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" />
+          </svg>
+        </span>
+        <span>Dental<span class="brand-light">vibe</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="#services">Services</a>
+        <a href="#about">About</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#appointments">My appointments</a>
+        <a href="#location">Location</a>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.2 15.4A8.5 8.5 0 0 1 8.6 3.8 8.6 8.6 0 1 0 20.2 15.4Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="theme-label">Dark mode</span>
+        </button>
+        <button class="button button-outline sign-in-trigger" type="button" data-open-auth>
+          Sign in <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero page-width" aria-labelledby="doctor-name">
+        <div class="doctor-photo-wrap">
+          <img
+            class="doctor-photo"
+            src="assets/dr-althea-sun.jpg"
+            alt="Dr. Althea Sun celebrating her graduation"
+          />
+          <div class="photo-caption">
+            <span class="online-dot"></span>
+            <span>Accepting new patients</span>
+          </div>
+          <div class="photo-decoration" aria-hidden="true">✳</div>
+        </div>
+        <div class="hero-content">
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR NEIGHBORHOOD DENTAL HOME</div>
+          <h1 id="doctor-name">A healthier smile<br />starts <span>right here.</span></h1>
+          <p class="hero-intro">
+            Thoughtful, friendly dental care for every smile. Meet your dentist and book a visit that works for you.
+          </p>
+          <div class="doctor-nameplate">
+            <div class="nameplate-initials" aria-hidden="true">AS</div>
+            <div>
+              <h2>Dr. Althea Sun</h2>
+              <p>Dentist · Davao Medical School Foundation</p>
+            </div>
+            <span class="verified-badge" title="Verified dentist" aria-label="Verified dentist">✓</span>
+          </div>
+          <div class="hero-details">
+            <span><span class="detail-icon">⌖</span> Tagum City, Davao del Norte</span>
+            <span><span class="detail-icon">★</span> 4.9 <span class="muted">(120+ happy smiles)</span></span>
+          </div>
+          <a class="button button-primary hero-cta" href="#appointments">
+            Book an appointment <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div class="hero-note" aria-hidden="true">
+          <span>SMALL STEPS.</span>
+          <span>HEALTHIER SMILES.</span>
+        </div>
+      </section>
+
+      <section class="services-section section-pad" id="services" aria-labelledby="services-title">
+        <div class="page-width">
+          <div class="section-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> CARE FOR YOUR SMILE</div>
+              <h2 id="services-title">Good care, <span>your way.</span></h2>
+            </div>
+            <p>From your regular clean to a little extra care, we’ll make sure you feel right at home.</p>
+          </div>
+          <div class="service-grid">
+            <article class="service-card">
+              <div class="service-icon icon-mint" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none"><path d="M14 9c-5 0-7 4-6 10 1.2 8 5.1 17 8.5 17 2.2 0 2.2-8 5.5-8s3.3 8 5.5 8c3.4 0 7.3-9 8.5-17 1-6-1-10-6-10-3.5 0-5.5 2-8 2s-4.5-2-8-2Z" stroke="currentColor" stroke-width="1.8"/><path d="m18 19 3 3 6-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="service-meta">01 <span>PREVENTIVE CARE</span></div>
+              <h3>Oral cleaning</h3>
+              <p>A fresh, thorough clean to keep your teeth healthy and your smile bright.</p>
+              <div class="service-footer"><span>From <strong>₱800</strong></span><button type="button" class="text-button book-service" data-service="Oral cleaning">Book a visit <span>→</span></button></div>
+            </article>
+            <article class="service-card">
+              <div class="service-icon icon-peach" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none"><path d="M12 14h24v22H12z" stroke="currentColor" stroke-width="1.8"/><path d="M18 14V9h12v5M18 23h12M18 29h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <div class="service-meta">02 <span>RESTORATIVE CARE</span></div>
+              <h3>Tooth restoration</h3>
+              <p>Natural-looking pasta fillings to restore comfort, function, and confidence.</p>
+              <div class="service-footer"><span>From <strong>₱1,200</strong></span><button type="button" class="text-button book-service" data-service="Tooth restoration">Book a visit <span>→</span></button></div>
+            </article>
+            <article class="service-card">
+              <div class="service-icon icon-lilac" aria-hidden="true">
+                <svg viewBox="0 0 48 48" fill="none"><path d="M10 15c7 3 21 3 28 0v12c0 6-6 11-14 11s-14-5-14-11V15Z" stroke="currentColor" stroke-width="1.8"/><path d="M10 20c7 3 21 3 28 0M17 29v4m7-3v5m7-6v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+              <div class="service-meta">03 <span>RESTORATIVE CARE</span></div>
+              <h3>Dentures <span class="local-name">(Pustiso)</span></h3>
+              <p>Comfortable, custom-fitted dentures made to help you smile with ease again.</p>
+              <div class="service-footer"><span>Consultation <strong>available</strong></span><button type="button" class="text-button book-service" data-service="Dentures (Pustiso)">Book a visit <span>→</span></button></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="about-section section-pad" id="about" aria-labelledby="about-title">
+        <div class="page-width about-layout">
+          <div class="about-art" aria-hidden="true">
+            <div class="about-art-shape"></div>
+            <div class="about-note">
+              <span class="about-note-icon">✳</span>
+              <span>CARE THAT PUTS<br />YOU AT EASE</span>
+            </div>
+            <div class="about-art-caption">A little care goes a long way.</div>
+          </div>
+          <div class="about-copy">
+            <div class="eyebrow"><span class="eyebrow-line"></span> A LITTLE ABOUT US</div>
+            <h2 id="about-title">Dental care that<br />starts with <span>listening.</span></h2>
+            <p>
+              At Dentalvibe, we believe a good dental visit should feel clear, comfortable, and centered around you.
+              Our Tagum City clinic is here to help you care for your smile, one step at a time.
+            </p>
+            <p>
+              Whether you’re here for a regular cleaning or need help restoring your smile, we’ll take time to
+              understand your needs, explain your options, and help you feel at ease.
+            </p>
+            <div class="about-values">
+              <div><span class="value-check">✓</span><span><strong>Gentle, thoughtful care</strong><small>We’ll help you feel comfortable at every visit.</small></span></div>
+              <div><span class="value-check">✓</span><span><strong>Clear conversations</strong><small>Understand your options before choosing a treatment.</small></span></div>
+              <div><span class="value-check">✓</span><span><strong>Care close to home</strong><small>Friendly dental services right here in Tagum City.</small></span></div>
+            </div>
+            <a class="button button-primary about-cta" href="#appointments">Plan your visit <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="reviews-section section-pad" id="reviews" aria-labelledby="reviews-title">
+        <div class="page-width">
+          <div class="section-heading reviews-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> KIND WORDS, BRIGHTER SMILES</div>
+              <h2 id="reviews-title">A little love from <span>our patients.</span></h2>
+            </div>
+            <div class="review-rating" aria-label="Sample rating: 5 out of 5 stars">
+              <span class="review-stars" aria-hidden="true">★★★★★</span>
+              <span>Patient reviews</span>
+            </div>
+          </div>
+          <div class="review-grid">
+            <article class="review-card">
+              <div class="review-card-top"><span class="review-stars" aria-label="5 out of 5 stars">★★★★★</span><span class="review-quote" aria-hidden="true">“</span></div>
+              <blockquote>“The team made me feel comfortable and explained every step. I left feeling much more confident about my smile.”</blockquote>
+              <div class="review-author"><span class="review-avatar avatar-sage">M</span><span><strong>Maria L.</strong><small>Oral cleaning</small></span><span class="review-demo-label">Sample</span></div>
+            </article>
+            <article class="review-card">
+              <div class="review-card-top"><span class="review-stars" aria-label="5 out of 5 stars">★★★★★</span><span class="review-quote" aria-hidden="true">“</span></div>
+              <blockquote>“I appreciated how clearly my treatment options were explained. The visit felt calm, friendly, and never rushed.”</blockquote>
+              <div class="review-author"><span class="review-avatar avatar-peach">J</span><span><strong>Joel R.</strong><small>Tooth restoration</small></span><span class="review-demo-label">Sample</span></div>
+            </article>
+            <article class="review-card">
+              <div class="review-card-top"><span class="review-stars" aria-label="5 out of 5 stars">★★★★★</span><span class="review-quote" aria-hidden="true">“</span></div>
+              <blockquote>“Kind, patient care from start to finish. I felt listened to, and my questions were always welcome.”</blockquote>
+              <div class="review-author"><span class="review-avatar avatar-lilac">A</span><span><strong>Anna C.</strong><small>Dental consultation</small></span><span class="review-demo-label">Sample</span></div>
+            </article>
+          </div>
+          <p class="reviews-disclaimer">Review examples are placeholders for design. Replace them with feedback shared by real patients before publishing.</p>
+        </div>
+      </section>
+
+      <section class="appointments-section section-pad" id="appointments" aria-labelledby="appointments-title">
+        <div class="page-width">
+          <div class="section-heading appointments-heading">
+            <div>
+              <div class="eyebrow"><span class="eyebrow-line"></span> YOUR CARE, ALL IN ONE PLACE</div>
+              <h2 id="appointments-title">Your appointments.</h2>
+            </div>
+            <button type="button" class="button button-dark" data-open-auth>Sign in to manage <span aria-hidden="true">↗</span></button>
+          </div>
+          <div class="booking-layout">
+            <div class="calendar-card">
+              <div class="calendar-top">
+                <div>
+                  <p class="calendar-overline">YOUR VISIT HISTORY</p>
+                  <h3 id="calendar-month">November 2026</h3>
+                </div>
+                <div class="calendar-controls">
+                  <button type="button" class="calendar-arrow" id="prev-month" aria-label="Previous month">‹</button>
+                  <button type="button" class="calendar-arrow" id="next-month" aria-label="Next month">›</button>
+                </div>
+              </div>
+              <div class="calendar-grid" id="calendar-grid" role="grid" aria-label="Appointment calendar"></div>
+              <div class="calendar-legend">
+                <span><i class="legend-dot legend-visit"></i> Previous visits</span>
+                <span><i class="legend-dot legend-upcoming"></i> Upcoming</span>
+                <span><i class="legend-dot legend-selected"></i> Selected day</span>
+              </div>
+            </div>
+            <aside class="visit-card" aria-live="polite">
+              <div class="visit-card-head">
+                <div>
+                  <p class="calendar-overline">APPOINTMENTS</p>
+                  <h3 id="visit-date-heading">Your recent visits</h3>
+                </div>
+                <span class="visit-count" id="visit-count">2</span>
+              </div>
+              <div id="visit-list" class="visit-list"></div>
+              <div class="new-booking">
+                <div class="new-booking-icon" aria-hidden="true">＋</div>
+                <div>
+                  <strong>Time for a check-in?</strong>
+                  <p>Pick a service and we’ll help you book.</p>
+                </div>
+              </div>
+              <form id="booking-form" class="booking-form">
+                <label for="service-select">Choose a service</label>
+                <select id="service-select" name="service">
+                  <option value="Oral cleaning">Oral cleaning</option>
+                  <option value="Tooth restoration">Tooth restoration (pasta)</option>
+                  <option value="Dentures (Pustiso)">Dentures (pustiso)</option>
+                </select>
+                <button class="button button-primary booking-submit" type="submit">Request a booking <span>→</span></button>
+                <p class="booking-feedback" id="booking-feedback" role="status"></p>
+              </form>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="location-section section-pad" id="location" aria-labelledby="location-title">
+        <div class="page-width location-card">
+          <div class="location-copy">
+            <div class="eyebrow"><span class="eyebrow-line"></span> CLOSE TO HOME</div>
+            <h2 id="location-title">Find your way<br />to a <span>better smile.</span></h2>
+            <p>We’re here for you in the heart of Tagum City. Drop by for a visit or get in touch to plan your appointment.</p>
+            <div class="location-address"><span class="location-pin" aria-hidden="true">⌖</span><div><strong>Dentalvibe Dental Clinic</strong><span>Tagum City, Davao del Norte, Philippines</span></div></div>
+            <a class="text-button map-link" href="https://maps.google.com/?q=Tagum+City+Davao+del+Norte" target="_blank" rel="noreferrer">Get directions <span>↗</span></a>
+          </div>
+          <div class="map-art" role="img" aria-label="Map illustration showing Dentalvibe in Tagum City">
+            <div class="map-street street-one"></div><div class="map-street street-two"></div><div class="map-street street-three"></div>
+            <div class="map-block block-one"></div><div class="map-block block-two"></div><div class="map-block block-three"></div><div class="map-block block-four"></div>
+            <div class="map-label">TAGUM CITY</div>
+            <div class="map-marker"><span class="map-marker-icon">✚</span><span>Dentalvibe</span></div>
+            <div class="map-water">DAVAO DEL NORTE</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer page-width">
+      <a class="brand footer-brand" href="#" aria-label="Dentalvibe home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 5.5c-2.8 0-5.3 1.7-8.6 1.7C6.2 7.2 4.5 11 5.5 17c1.3 8 5.5 17.2 9.1 17.2 2.7 0 2.4-9.2 5.4-9.2s2.7 9.2 5.4 9.2c3.6 0 7.8-9.2 9.1-17.2 1-6-0.7-9.8-5.9-9.8-3.3 0-5.8-1.7-8.6-1.7Z" fill="currentColor"/><path d="M15.2 14.8h9.6M20 10v9.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span><span>Dental<span class="brand-light">vibe</span></span></a>
+      <p>Here’s to feeling good about your smile. <span>© 2026 Dentalvibe</span></p>
+      <a href="admin.html">Admin portal <span aria-hidden="true">↗</span></a>
+    </footer>
+
+    <div class="modal-backdrop" id="signin-modal" hidden>
+      <section class="signin-modal" role="dialog" aria-modal="true" aria-labelledby="signin-title">
+        <button type="button" class="modal-close" aria-label="Close account dialog" data-close-signin>×</button>
+        <div class="modal-logo brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 5.5c-2.8 0-5.3 1.7-8.6 1.7C6.2 7.2 4.5 11 5.5 17c1.3 8 5.5 17.2 9.1 17.2 2.7 0 2.4-9.2 5.4-9.2s2.7 9.2 5.4 9.2c3.6 0 7.8-9.2 9.1-17.2 1-6-0.7-9.8-5.9-9.8-3.3 0-5.8-1.7-8.6-1.7Z" fill="currentColor"/><path d="M15.2 14.8h9.6M20 10v9.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <p class="eyebrow modal-eyebrow">WELCOME BACK</p>
+        <h2 id="signin-title">Your smile, your schedule.</h2>
+        <p class="modal-intro">Sign in to see your past visits and keep your next appointment on track.</p>
+        <form id="signin-form">
+          <label for="signin-email">Email address</label>
+          <input id="signin-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+          <label for="signin-password">Password</label>
+          <div class="password-field">
+            <input id="signin-password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle-password="signin-password" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <button type="submit" class="button button-primary signin-submit">Sign in <span>→</span></button>
+        </form>
+        <form id="totp-login-form" hidden>
+          <label for="totp-login-code">Authenticator code</label>
+          <input id="totp-login-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,8}" maxlength="8" placeholder="6-digit code" required />
+          <p class="form-help">Enter the current code from your authenticator app.</p>
+          <button type="submit" class="button button-primary signin-submit">Verify and sign in <span>→</span></button>
+          <button type="button" class="text-button auth-back-button" id="cancel-totp-login">Back to sign in</button>
+        </form>
+        <form id="register-form" hidden>
+          <label for="register-name">Full name</label>
+          <input id="register-name" name="name" type="text" placeholder="Your name" autocomplete="name" maxlength="100" required />
+          <label for="register-email">Email address</label>
+          <input id="register-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+          <label for="register-password">Password <span class="field-hint">(at least 8 characters)</span></label>
+          <div class="password-field">
+            <input id="register-password" name="password" type="password" placeholder="Create a password" autocomplete="new-password" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle-password="register-password" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <label for="register-confirm-password">Confirm password</label>
+          <div class="password-field">
+            <input id="register-confirm-password" name="confirm-password" type="password" placeholder="Enter your password again" autocomplete="new-password" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle-password="register-confirm-password" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <button type="submit" class="button button-primary signin-submit">Create account <span>→</span></button>
+        </form>
+        <div class="account-panel" id="account-panel" hidden>
+          <div id="account-overview" class="account-overview">
+            <div class="account-avatar" id="account-avatar" aria-hidden="true">A</div>
+            <div class="account-details">
+              <strong id="account-name"></strong>
+              <span id="account-email"></span>
+            </div>
+            <div class="account-data-note">Your account and appointment requests are saved with Supabase.</div>
+            <button type="button" class="button button-outline settings-button" id="open-account-settings">Account settings <span aria-hidden="true">⚙</span></button>
+            <button type="button" class="button button-outline signout-button" id="signout-button">Sign out <span aria-hidden="true">↗</span></button>
+          </div>
+          <section class="account-settings" id="account-settings" hidden aria-labelledby="account-settings-title">
+            <button type="button" class="text-button settings-back" id="back-to-account">← Back to account</button>
+            <h3 id="account-settings-title">Security settings</h3>
+            <div class="two-factor-setting">
+              <div class="two-factor-heading">
+                <span class="two-factor-icon" aria-hidden="true">⌑</span>
+                <div>
+                  <strong>Authenticator app</strong>
+                  <span id="two-factor-status">Two-factor authentication is off</span>
+                </div>
+              </div>
+              <p>Require a time-based, 6-digit code from an authenticator app when signing in.</p>
+              <button type="button" class="button button-primary settings-action" id="enable-two-factor">Set up 2FA</button>
+              <button type="button" class="button button-outline settings-action" id="disable-two-factor" hidden>Turn off 2FA</button>
+            </div>
+            <div class="two-factor-setup" id="two-factor-setup" hidden>
+              <h4>Connect your authenticator</h4>
+              <ol>
+                <li>Scan the QR code with your authenticator app, or add the account manually.</li>
+                <li>If adding it manually, use the setup key below and choose time-based codes.</li>
+                <li>Enter a current code to verify and enable two-factor authentication.</li>
+              </ol>
+              <img class="two-factor-qr" id="two-factor-qr" alt="Authenticator setup QR code" hidden />
+              <label for="two-factor-secret">Setup key</label>
+              <div class="secret-field">
+                <input id="two-factor-secret" type="text" readonly aria-label="Authenticator setup key" />
+                <button type="button" class="button button-outline" id="copy-two-factor-secret">Copy</button>
+              </div>
+              <form id="enable-two-factor-form">
+                <label for="enable-two-factor-code">6-digit authenticator code</label>
+                <input id="enable-two-factor-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,8}" maxlength="8" placeholder="Enter current code" required />
+                <button type="submit" class="button button-primary signin-submit">Verify and enable 2FA <span>→</span></button>
+              </form>
+              <button type="button" class="text-button auth-back-button" id="cancel-two-factor-setup">Cancel setup</button>
+            </div>
+            <form class="two-factor-disable" id="disable-two-factor-form" hidden>
+              <h4>Turn off two-factor authentication?</h4>
+              <p>Confirm with a current code from your authenticator app.</p>
+              <label for="disable-two-factor-code">6-digit authenticator code</label>
+              <input id="disable-two-factor-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,8}" maxlength="8" placeholder="Enter current code" required />
+              <button type="submit" class="button button-outline signin-submit">Verify and turn off 2FA</button>
+              <button type="button" class="text-button auth-back-button" id="cancel-disable-two-factor">Cancel</button>
+            </form>
+          </section>
+        </div>
+        <p class="signin-feedback" id="signin-feedback" role="status"></p>
+        <p class="signup-note" id="signup-note">New to Dentalvibe? <button type="button" class="text-button" id="create-account">Create an account</button></p>
+        <p class="signup-note" id="signin-note" hidden>Already have an account? <button type="button" class="text-button" id="switch-to-signin">Sign in</button></p>
+        <p class="auth-storage-note">Customer accounts use Supabase Auth and appointment requests are stored in the clinic database. Previous browser-only demo accounts are not imported. Email confirmation may be required.</p>
+      </section>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f7f8f2" />
+    <meta name="description" content="Private Dentalvibe clinic administration." />
+    <title>Admin portal — Dentalvibe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="admin.js" defer></script>
+  </head>
+  <body class="admin-page">
+    <header class="site-header admin-header">
+      <a class="brand" href="index.html" aria-label="Dentalvibe home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none"><path d="M20 5.5c-2.8 0-5.3 1.7-8.6 1.7C6.2 7.2 4.5 11 5.5 17c1.3 8 5.5 17.2 9.1 17.2 2.7 0 2.4-9.2 5.4-9.2s2.7 9.2 5.4 9.2c3.6 0 7.8-9.2 9.1-17.2 1-6-0.7-9.8-5.9-9.8-3.3 0-5.8-1.7-8.6-1.7Z" fill="currentColor"/><path d="M15.2 14.8h9.6M20 10v9.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </span>
+        <span>Dental<span class="brand-light">vibe</span></span>
+      </a>
+      <div class="admin-header-actions">
+        <a class="back-to-site" href="index.html">← Back to website</a>
+        <button class="theme-toggle" id="admin-theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+          <span aria-hidden="true" id="admin-theme-icon">☾</span><span id="admin-theme-label">Dark mode</span>
+        </button>
+        <button class="button button-outline admin-signout" id="admin-signout" type="button" hidden>Sign out</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <section class="admin-login-card" id="admin-login-card" aria-labelledby="admin-login-title">
+        <div class="admin-login-mark" aria-hidden="true">✚</div>
+        <p class="eyebrow"><span class="eyebrow-line"></span> PRIVATE CLINIC ACCESS</p>
+        <h1 id="admin-login-title">Admin portal</h1>
+        <p class="admin-login-intro">Sign in with an invited clinic administrator account. Admin access is verified by Supabase policies.</p>
+        <form id="admin-login-form" class="admin-login-form">
+          <label for="admin-email">Admin email</label>
+          <input id="admin-email" name="email" type="email" autocomplete="username" required />
+          <label for="admin-password">Password</label>
+          <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
+          <button type="submit" class="button button-primary admin-login-submit">Sign in securely <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="admin-feedback" id="admin-login-feedback" role="status"></p>
+        <p class="admin-security-note">Admin accounts are never created from this page. Ask a project owner to invite your email and grant its admin role.</p>
+      </section>
+
+      <section class="admin-dashboard" id="admin-dashboard" hidden aria-labelledby="dashboard-title">
+        <div class="dashboard-heading">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> CLINIC CONTROL CENTER</p>
+            <h1 id="dashboard-title">Good day, admin.</h1>
+            <p class="dashboard-subtitle">Manage booking requests, patient contacts, clinic settings, and integration availability.</p>
+          </div>
+          <span class="admin-access-badge"><span></span> Verified administrator</span>
+        </div>
+
+        <div class="dashboard-stats" aria-label="Booking overview">
+          <article class="stat-card"><span>All bookings</span><strong id="stat-total">—</strong></article>
+          <article class="stat-card"><span>Needs review</span><strong id="stat-requested">—</strong></article>
+          <article class="stat-card"><span>Confirmed</span><strong id="stat-confirmed">—</strong></article>
+          <article class="stat-card"><span>Patients</span><strong id="stat-patients">—</strong></article>
+        </div>
+
+        <nav class="admin-tabs" aria-label="Admin sections">
+          <button type="button" class="admin-tab active" data-panel="bookings-panel" aria-selected="true">Bookings</button>
+          <button type="button" class="admin-tab" data-panel="patients-panel" aria-selected="false">Patients</button>
+          <button type="button" class="admin-tab" data-panel="integrations-panel" aria-selected="false">Integrations</button>
+          <button type="button" class="admin-tab" data-panel="settings-panel" aria-selected="false">Clinic settings</button>
+        </nav>
+
+        <p class="dashboard-feedback" id="dashboard-feedback" role="status"></p>
+
+        <section class="admin-panel active" id="bookings-panel" aria-labelledby="bookings-title">
+          <div class="panel-heading">
+            <div><h2 id="bookings-title">Bookings</h2><p>Review and update patient appointment requests.</p></div>
+            <button type="button" class="button button-outline refresh-button" id="refresh-bookings">Refresh</button>
+          </div>
+          <div class="table-toolbar">
+            <label for="booking-search">Search bookings</label>
+            <input id="booking-search" type="search" placeholder="Search name, email, or service" />
+            <label for="booking-status-filter">Status</label>
+            <select id="booking-status-filter">
+              <option value="all">All statuses</option>
+              <option value="requested">Requested</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Patient</th><th>Service</th><th>Date</th><th>Time</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
+              <tbody id="bookings-body"><tr><td colspan="7" class="table-message">Sign in to load bookings.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-panel" id="patients-panel" hidden aria-labelledby="patients-title">
+          <div class="panel-heading"><div><h2 id="patients-title">Patients</h2><p>Contact details from booking requests. Patient records are derived from bookings.</p></div></div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Bookings</th><th>Last request</th></tr></thead>
+              <tbody id="patients-body"><tr><td colspan="4" class="table-message">Sign in to load patient contacts.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-panel" id="integrations-panel" hidden aria-labelledby="integrations-title">
+          <div class="panel-heading"><div><h2 id="integrations-title">Integrations</h2><p>Control which clinic integrations are allowed to run.</p></div></div>
+          <div class="integration-security-note"><strong>Provider connections are not configured here.</strong> API credentials must be stored as server-side Supabase Edge Function secrets. Do not paste secret keys into this dashboard or browser config.</div>
+          <div class="integration-grid" id="integration-grid"></div>
+        </section>
+
+        <section class="admin-panel" id="settings-panel" hidden aria-labelledby="settings-title">
+          <div class="panel-heading"><div><h2 id="settings-title">Clinic settings</h2><p>Update the clinic profile used by the administration system.</p></div></div>
+          <form id="clinic-settings-form" class="clinic-settings-form">
+            <label for="clinic-name">Clinic name</label>
+            <input id="clinic-name" name="name" maxlength="120" required />
+            <label for="clinic-location">Location</label>
+            <input id="clinic-location" name="location" maxlength="200" required />
+            <label for="clinic-phone">Contact phone</label>
+            <input id="clinic-phone" name="phone" type="tel" maxlength="40" />
+            <button type="submit" class="button button-primary">Save clinic profile <span aria-hidden="true">→</span></button>
+          </form>
+        </section>
+      </section>
+    </main>
+    <footer class="admin-footer"><span>Dentalvibe Admin</span><span>Protected by Supabase Auth and row-level security</span></footer>
+  </body>
+</html>
