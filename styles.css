@@ -231,7 +231,7 @@ h1 > span, .section-heading h2 > span, .location-copy h2 > span { color: var(--g
 .account-overview[hidden], .account-settings[hidden], .two-factor-setup[hidden],
 .two-factor-disable[hidden], .settings-action[hidden] { display: none; }
 .signin-modal label { margin-top: 3px; color: #485b50; font-size: 10px; font-weight: 700; }
-.field-hint { color: #89948c; font-weight: 400; }
+.signin-modal .remember-option { display: inline-flex; align-items: center; justify-self: start; gap: 6px; width: fit-content; margin: 3px 0 0; cursor: pointer; } .signin-modal .remember-option input { flex: 0 0 12px; width: 12px; height: 12px; margin: 0; accent-color: var(--green); } .remember-option span { color: #647269; font-size: 9px; font-weight: 500; } .field-hint { color: #89948c; font-weight: 400; }
 .password-field { display: flex; align-items: center; overflow: hidden; border: 1px solid #e4e9e1; border-radius: 5px; background: #fff; }
 .password-field:focus-within { border-color: #85ae98; box-shadow: 0 0 0 3px rgba(39,118,94,.09); }
 .signin-modal .password-field input { min-width: 0; border: 0; box-shadow: none; }
