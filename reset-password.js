@@ -166,6 +166,14 @@
         console.error("Password updated but local sign-out failed.", signOutError);
       }
       form.reset();
+      document.querySelectorAll("[data-toggle-password]").forEach(function (toggle) {
+        const input = document.getElementById(toggle.dataset.togglePassword);
+        if (!input) return;
+        input.type = "password";
+        toggle.textContent = "Show";
+        toggle.setAttribute("aria-label", "Show password");
+        toggle.setAttribute("aria-pressed", "false");
+      });
       showSuccess();
     } catch (error) {
       setFeedback(error.message || "Could not update your password. Request a new reset link and try again.", true);
