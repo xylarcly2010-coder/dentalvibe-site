@@ -50,6 +50,7 @@ let currentAccount = null;
 let currentAppointments = [];
 let pendingMfa = null;
 let pendingTotpFactorId = null;
+let passwordRecoveryPending = false;
 
 function setFeedback(message, isError = false) {
   const feedback = document.querySelector("#signin-feedback");
@@ -74,8 +75,21 @@ const visitHeading = document.querySelector("#visit-date-heading");
 const visitCount = document.querySelector("#visit-count");
 const bookingFeedback = document.querySelector("#booking-feedback");
 const serviceSelect = document.querySelector("#service-select");
+const bookingPhone = document.querySelector("#booking-phone");
+const bookingSmsOptIn = document.querySelector("#booking-sms-opt-in");
 let displayedMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 let selectedDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+function normalizePhilippinePhone(value) {
+  const compact = value.trim().replace(/[\s()-]/g, "");
+  if (!compact) return "";
+  const normalized = compact.startsWith("09")
+    ? `+63${compact.slice(1)}`
+    : compact.startsWith("639")
+    ? `+${compact}`
+    : compact;
+  return /^\+639\d{9}$/.test(normalized) ? normalized : null;
+}
 
 function accountVisits() {
   if (!currentAccount) return [];
@@ -204,31 +218,43 @@ function updateAuthControls() {
 
 function setAuthMode(mode) {
   const signinForm = document.querySelector("#signin-form");
+  const forgotPasswordForm = document.querySelector("#forgot-password-form");
+  const resetPasswordForm = document.querySelector("#reset-password-form");
   const totpLoginForm = document.querySelector("#totp-login-form");
   const registerForm = document.querySelector("#register-form");
   const accountPanel = document.querySelector("#account-panel");
   const signupNote = document.querySelector("#signup-note");
-  const signinNote = document.querySelector("#signin-note");
+  const registerBackButton = document.querySelector("#back-from-register");
+  const closeButton = document.querySelector("[data-close-signin]");
   const title = document.querySelector("#signin-title");
   const intro = document.querySelector(".modal-intro");
 
   signinForm.hidden = mode !== "signin";
+  forgotPasswordForm.hidden = mode !== "forgot-password";
+  resetPasswordForm.hidden = mode !== "update-password";
   totpLoginForm.hidden = mode !== "totp-login";
   registerForm.hidden = mode !== "register";
   accountPanel.hidden = mode !== "account";
   signupNote.hidden = mode !== "signin";
-  signinNote.hidden = mode !== "register";
+  registerBackButton.hidden = mode !== "register";
+  closeButton.hidden = mode === "register";
   title.textContent = mode === "register"
     ? "Create your account."
     : mode === "account" ? "Your Dentalvibe account."
-      : mode === "totp-login" ? "Verify it’s you."
-        : "Your smile, your schedule.";
+      : mode === "forgot-password" ? "Reset your password."
+        : mode === "update-password" ? "Choose a new password."
+          : mode === "totp-login" ? "Verify it’s you."
+            : "Your smile, your schedule.";
   intro.hidden = mode === "account";
   intro.textContent = mode === "register"
     ? "Create an account to save your details and keep your appointment requests together."
-    : mode === "totp-login"
-      ? "Two-factor authentication is on. Enter a current code from your authenticator app to finish signing in."
-      : "Sign in to see your saved visits and keep your next appointment on track.";
+    : mode === "forgot-password"
+      ? "Enter the email address on your account and we’ll send you a password reset link."
+      : mode === "update-password"
+        ? "Choose a new password for your Dentalvibe account."
+        : mode === "totp-login"
+          ? "Two-factor authentication is on. Enter a current code from your authenticator app to finish signing in."
+          : "Sign in to see your saved visits and keep your next appointment on track.";
   hidePasswordFields();
   setFeedback("");
   if (mode === "account") void showAccountOverview();
@@ -347,6 +373,7 @@ function openAuth() {
 }
 
 function closeAuth() {
+  if (!document.querySelector("#register-form").hidden) return;
   hidePasswordFields();
   if (pendingTotpFactorId) void cancelTotpSetup();
   signinModal.hidden = true;
@@ -369,7 +396,22 @@ document.querySelector("#create-account").addEventListener("click", () => {
   setAuthMode("register");
   document.querySelector("#register-name").focus();
 });
-document.querySelector("#switch-to-signin").addEventListener("click", () => {
+document.querySelector("#back-from-register").addEventListener("click", () => {
+  setAuthMode("signin");
+  document.querySelector("#signin-email").focus();
+});
+document.querySelector("#forgot-password").addEventListener("click", () => {
+  const email = document.querySelector("#signin-email").value.trim();
+  document.querySelector("#forgot-password-email").value = email;
+  setAuthMode("forgot-password");
+  document.querySelector("#forgot-password-email").focus();
+});
+document.querySelector("#back-from-forgot-password").addEventListener("click", () => {
+  setAuthMode("signin");
+  document.querySelector("#signin-email").focus();
+});
+document.querySelector("#back-from-reset-password").addEventListener("click", () => {
+  passwordRecoveryPending = false;
   setAuthMode("signin");
   document.querySelector("#signin-email").focus();
 });
@@ -498,7 +540,7 @@ async function initializeAuth() {
   try {
     const { data, error } = await supabaseClient.auth.getSession();
     if (error) throw error;
-    if (data.session?.user) await continueSignedInUser(data.session.user);
+    if (data.session?.user && !passwordRecoveryPending) await continueSignedInUser(data.session.user);
   } catch (error) {
     openAuth();
     setFeedback(`Could not restore your Supabase session: ${error.message}`, true);
@@ -506,6 +548,14 @@ async function initializeAuth() {
 }
 
 supabaseClient?.auth.onAuthStateChange((event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    passwordRecoveryPending = true;
+    signinModal.hidden = false;
+    document.body.classList.add("modal-open");
+    setAuthMode("update-password");
+    document.querySelector("#reset-password").focus();
+    return;
+  }
   if (event === "SIGNED_OUT") {
     currentAccount = null;
     currentAppointments = [];
@@ -524,16 +574,79 @@ document.querySelector("#signin-form").addEventListener("submit", async (event) 
   try {
     requireSupabaseClient();
     const formData = new FormData(form);
-    const email = String(formData.get("email")).trim().toLowerCase();     const password = String(formData.get("password"));     form.elements.email.value = "";     form.elements.password.value = "";     const { data, error } = await supabaseClient.auth.signInWithPassword({
+    const email = String(formData.get("email")).trim().toLowerCase();
+    const password = String(formData.get("password"));
+    form.elements.email.value = "";
+    form.elements.password.value = "";
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
     });
     if (error) throw error;
     await continueSignedInUser(data.user);
   } catch (error) {
-    form.elements.email.value = "";     form.elements.password.value = "";     if (error.message === "Invalid login credentials") {       setFeedback("Invalid email or password. If you’re new, create an account first.", true);     } else {       setFeedback(`Sign-in failed: ${error.message}`, true);     }
+    if (error.message === "Invalid login credentials") {
+      setFeedback("Invalid email or password. If you’re new, create an account first.", true);
+    } else {
+      setFeedback(`Sign-in failed: ${error.message}`, true);
+    }
   } finally {
-    form.elements.email.value = "";     form.elements.password.value = "";     submitButton.disabled = false;
+    form.elements.email.value = "";
+    form.elements.password.value = "";
+    submitButton.disabled = false;
+  }
+});
+
+document.querySelector("#forgot-password-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const email = String(new FormData(form).get("email")).trim().toLowerCase();
+  submitButton.disabled = true;
+  try {
+    requireSupabaseClient();
+    const redirectUrl = window.DENTALVIBE_SUPABASE_CONFIG?.resetRedirectUrl || new URL("reset-password.html", window.location.href).href;
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
+    if (error) throw error;
+    setFeedback("If an account exists for that email, a password reset link will be sent. Open that email to continue on the secure reset page.");
+  } catch (error) {
+    setFeedback(`Could not send the password reset email: ${error.message}`, true);
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+document.querySelector("#reset-password-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const formData = new FormData(form);
+  const password = String(formData.get("password"));
+  const confirmPassword = String(formData.get("confirm-password"));
+  if (password !== confirmPassword) {
+    setFeedback("The passwords don’t match. Please try again.", true);
+    return;
+  }
+
+  submitButton.disabled = true;
+  try {
+    requireSupabaseClient();
+    const { data, error } = await supabaseClient.auth.updateUser({ password });
+    if (error) throw error;
+    if (!data.user) throw new Error("Supabase did not return the updated account.");
+    passwordRecoveryPending = false;
+    form.reset();
+    try {
+      await continueSignedInUser(data.user);
+      setFeedback("Your password has been updated.");
+    } catch (error) {
+      setAuthMode("signin");
+      setFeedback(`Your password was updated, but sign-in could not be completed: ${error.message}`, true);
+    }
+  } catch (error) {
+    setFeedback(`Could not update your password: ${error.message}`, true);
+  } finally {
+    submitButton.disabled = false;
   }
 });
 
@@ -715,6 +828,7 @@ document.querySelectorAll(".book-service").forEach((button) => {
 
 document.querySelector("#booking-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  bookingFeedback.classList.remove("feedback-error");
   if (!currentAccount) {
     bookingFeedback.textContent = "Sign in or create an account to save your appointment request.";
     openAuth();
@@ -722,6 +836,16 @@ document.querySelector("#booking-form").addEventListener("submit", async (event)
   }
   if (!supabaseClient) {
     bookingFeedback.textContent = "Bookings cannot be sent to the clinic right now. Supabase is unavailable; please try again later.";
+    return;
+  }
+
+  const phone = normalizePhilippinePhone(bookingPhone.value);
+  if (phone === null || (bookingSmsOptIn.checked && !phone)) {
+    bookingFeedback.textContent = bookingSmsOptIn.checked && !bookingPhone.value.trim()
+      ? "Enter a mobile number to receive appointment-related SMS messages."
+      : "Enter a valid Philippine mobile number, such as +63 9XX XXX XXXX.";
+    bookingFeedback.classList.add("feedback-error");
+    bookingPhone.focus();
     return;
   }
 
@@ -746,6 +870,8 @@ document.querySelector("#booking-form").addEventListener("submit", async (event)
       patient_id: currentAccount.id,
       patient_name: currentAccount.name,
       patient_email: currentAccount.email,
+      patient_phone: phone || null,
+      patient_sms_opt_in: bookingSmsOptIn.checked,
       service: appointment.service,
       appointment_date: appointment.date,
     }).select("id, service, appointment_date, appointment_time, status").single();
@@ -757,11 +883,28 @@ document.querySelector("#booking-form").addEventListener("submit", async (event)
       status: data.status.charAt(0).toUpperCase() + data.status.slice(1),
       time: data.appointment_time,
     });
-    bookingFeedback.textContent = `Your ${appointment.service.toLowerCase()} request for ${formatVisitDate(bookingDate)} was sent to the clinic. The clinic still needs to confirm it.`;
+    let delivery = null;
+    try {
+      const { data: result, error: notificationError } = await supabaseClient.functions.invoke("dentalvibe-integrations", {
+        body: { action: "booking_event", bookingId: data.id, eventType: "requested" },
+      });
+      if (notificationError) throw notificationError;
+      delivery = result;
+    } catch (error) {
+      console.error("The booking was saved, but its notification request failed.", error);
+    }
+    if (!delivery || delivery.warnings?.length) {
+      bookingFeedback.textContent = `Your ${appointment.service.toLowerCase()} request for ${formatVisitDate(bookingDate)} was saved. The clinic still needs to confirm it; automated messages may not be configured yet.`;
+    } else if (delivery.sent?.length) {
+      bookingFeedback.textContent = `Your ${appointment.service.toLowerCase()} request for ${formatVisitDate(bookingDate)} was sent to the clinic. The clinic still needs to confirm it.`;
+    } else {
+      bookingFeedback.textContent = `Your ${appointment.service.toLowerCase()} request for ${formatVisitDate(bookingDate)} was saved. The clinic still needs to confirm it.`;
+    }
     renderCalendar();
     renderVisits();
   } catch (error) {
     bookingFeedback.textContent = `Booking request could not be sent: ${error.message}`;
+    bookingFeedback.classList.add("feedback-error");
   } finally {
     submitButton.disabled = false;
   }

@@ -8,6 +8,7 @@ const dashboard = document.querySelector("#admin-dashboard");
 const loginForm = document.querySelector("#admin-login-form");
 const loginFeedback = document.querySelector("#admin-login-feedback");
 const dashboardFeedback = document.querySelector("#dashboard-feedback");
+const integrationFeedback = document.querySelector("#integration-feedback");
 const signoutButton = document.querySelector("#admin-signout");
 const bookingsBody = document.querySelector("#bookings-body");
 const patientsBody = document.querySelector("#patients-body");
@@ -83,6 +84,7 @@ async function loadDashboard() {
   renderBookings();
   renderPatients();
   renderIntegrations();
+  void refreshIntegrationStatus();
 }
 
 function updateStats() {
@@ -124,7 +126,7 @@ function renderBookings() {
     return matchesStatus && searchable.includes(search);
   });
   if (filtered.length === 0) {
-    appendTableMessage(bookingsBody, 7, bookings.length ? "No bookings match these filters." : "No bookings have been requested yet.");
+    appendTableMessage(bookingsBody, 8, bookings.length ? "No bookings match these filters." : "No bookings have been requested yet.");
     return;
   }
 
@@ -137,6 +139,11 @@ function renderBookings() {
     const email = document.createElement("span");
     email.textContent = booking.patient_email;
     patient.append(name, email);
+    if (booking.patient_phone) {
+      const phone = document.createElement("span");
+      phone.textContent = `${booking.patient_phone}${booking.patient_sms_opt_in ? " · SMS opted in" : ""}`;
+      patient.append(phone);
+    }
 
     const service = createCell(row);
     service.textContent = booking.service;
@@ -157,6 +164,20 @@ function renderBookings() {
     });
     status.value = booking.status;
     statusCell.append(status);
+    const paymentCell = createCell(row);
+    const payment = document.createElement("select");
+    [
+      ["not_requested", "Not requested"],
+      ["awaiting_payment", "Awaiting payment"],
+      ["paid", "Paid (manual)"],
+    ].forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      payment.append(option);
+    });
+    payment.value = booking.payment_status ?? "not_requested";
+    paymentCell.append(payment);
     const notesCell = createCell(row);
     const notes = createInput(booking.notes, "text", "notes-input");
     notes.maxLength = 2000;
@@ -176,11 +197,18 @@ function renderBookings() {
           appointment_date: date.value,
           appointment_time: time.value.trim() || "To be confirmed",
           status: status.value,
+          payment_status: payment.value,
           notes: notes.value.trim(),
         }).eq("id", booking.id);
         if (error) throw error;
-        showFeedback(dashboardFeedback, "Booking updated.");
+        const { error: integrationError, data: integrationResult } = await adminClient.functions.invoke("dentalvibe-integrations", {
+          body: { action: "booking_event", bookingId: booking.id, eventType: "updated" },
+        });
+        const statusMessage = integrationError || integrationResult?.warnings?.length
+          ? "Booking updated, but one or more notifications or calendar updates did not complete."
+          : "Booking updated.";
         await loadDashboard();
+        showFeedback(dashboardFeedback, statusMessage, Boolean(integrationError || integrationResult?.warnings?.length));
       } catch (error) {
         showFeedback(dashboardFeedback, `Could not update booking: ${error.message}`, true);
       } finally {
@@ -195,10 +223,17 @@ function renderBookings() {
       if (!window.confirm(`Permanently delete the booking for ${booking.patient_name}?`)) return;
       remove.disabled = true;
       try {
+        const { error: integrationError, data: integrationResult } = await adminClient.functions.invoke("dentalvibe-integrations", {
+          body: { action: "booking_event", bookingId: booking.id, eventType: "deleted" },
+        });
+        if (integrationError) console.error("Booking was removed but cancellation integration may not have completed.", integrationError);
         const { error } = await adminClient.from("bookings").delete().eq("id", booking.id);
         if (error) throw error;
-        showFeedback(dashboardFeedback, "Booking deleted.");
         await loadDashboard();
+        const hasIntegrationWarning = Boolean(integrationError || integrationResult?.warnings?.length);
+        showFeedback(dashboardFeedback, hasIntegrationWarning
+          ? "Booking deleted, but cancellation notifications or Calendar removal did not complete."
+          : "Booking deleted.", hasIntegrationWarning);
       } catch (error) {
         showFeedback(dashboardFeedback, `Could not delete booking: ${error.message}`, true);
       } finally {
@@ -218,16 +253,24 @@ function renderPatients() {
     const patient = patientsByEmail.get(key) ?? {
       name: booking.patient_name,
       email: booking.patient_email,
+      phone: booking.patient_phone ?? "",
+      smsOptIn: booking.patient_sms_opt_in === true,
       count: 0,
       lastRequest: booking.created_at,
+      contactUpdatedAt: booking.created_at,
     };
     patient.count += 1;
+    if (booking.created_at >= patient.contactUpdatedAt) {
+      patient.phone = booking.patient_phone ?? "";
+      patient.smsOptIn = booking.patient_sms_opt_in === true;
+      patient.contactUpdatedAt = booking.created_at;
+    }
     if (booking.created_at > patient.lastRequest) patient.lastRequest = booking.created_at;
     patientsByEmail.set(key, patient);
   });
   const patients = [...patientsByEmail.values()].sort((a, b) => a.name.localeCompare(b.name));
   if (patients.length === 0) {
-    appendTableMessage(patientsBody, 4, "Patient contacts appear here after booking requests are received.");
+    appendTableMessage(patientsBody, 6, "Patient contacts appear here after booking requests are received.");
     return;
   }
   patientsBody.replaceChildren();
@@ -235,6 +278,8 @@ function renderPatients() {
     const row = document.createElement("tr");
     createCell(row).textContent = patient.name;
     createCell(row).textContent = patient.email;
+    createCell(row).textContent = patient.phone || "—";
+    createCell(row).textContent = patient.smsOptIn ? "Opted in" : "No";
     createCell(row).textContent = patient.count;
     createCell(row).textContent = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(patient.lastRequest));
     patientsBody.append(row);
@@ -242,10 +287,10 @@ function renderPatients() {
 }
 
 const integrationLabels = {
-  google_calendar: { name: "Google Calendar", icon: "▦", description: "Appointment calendar synchronization." },
+  google_calendar: { name: "Google Calendar", icon: "▦", description: "Confirmed appointments sync to the clinic calendar." },
   email: { name: "Email notifications", icon: "✉", description: "Booking confirmations and clinic messages." },
-  sms: { name: "SMS notifications", icon: "▤", description: "Appointment reminders by text message." },
-  payments: { name: "Payments", icon: "₱", description: "Online payment provider connection." },
+  sms: { name: "SMS notifications", icon: "▤", description: "Booking updates by text; patient messages require opt-in." },
+  payments: { name: "Payments", icon: "₱", description: "Manual GCash arrangement; payments are not automatically verified." },
 };
 
 function renderIntegrations() {
@@ -271,12 +316,51 @@ function renderIntegrations() {
     const state = document.createElement("div");
     state.className = "integration-state";
     const connection = document.createElement("span");
-    connection.textContent = integration.configured ? "Server configured" : "Not connected";
+    connection.textContent = integration.provider === "payments"
+      ? "Manual only"
+      : integration.configured
+      ? integration.provider === "google_calendar" ? "Connected" : "Configured"
+      : "Not configured";
+    if (integration.provider === "google_calendar") {
+      const calendarButton = document.createElement("button");
+      calendarButton.type = "button";
+      calendarButton.className = "integration-connect";
+      calendarButton.textContent = integration.configured ? "Disconnect" : "Connect Google";
+      calendarButton.disabled = integration.configuring === true;
+      calendarButton.addEventListener("click", async () => {
+        calendarButton.disabled = true;
+        try {
+          if (integration.configured) {
+            const { data, error } = await adminClient.functions.invoke("dentalvibe-integrations", {
+              body: { action: "google_disconnect" },
+            });
+            if (error) throw error;
+            await refreshIntegrationStatus();
+            showFeedback(integrationFeedback, data?.revokeWarning
+              ? "Calendar disconnected in Dentalvibe. If access remains in Google, remove it from your Google Account's third-party connections."
+              : "Google Calendar disconnected.");
+          } else {
+            const { data, error } = await adminClient.functions.invoke("dentalvibe-integrations", {
+              body: { action: "google_oauth_start" },
+            });
+            if (error) throw error;
+            if (!data?.authorizationUrl) throw new Error("The Calendar authorization link was not returned.");
+            window.location.assign(data.authorizationUrl);
+          }
+        } catch (error) {
+          showFeedback(integrationFeedback, `Google Calendar connection failed: ${error.message}`, true);
+        } finally {
+          calendarButton.disabled = false;
+        }
+      });
+      state.append(calendarButton);
+    }
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "integration-toggle";
     toggle.setAttribute("aria-pressed", String(integration.enabled));
     toggle.textContent = integration.enabled ? "Enabled" : "Disabled";
+    toggle.disabled = integration.provider === "payments" || !integration.configured;
     toggle.addEventListener("click", async () => {
       toggle.disabled = true;
       try {
@@ -299,6 +383,22 @@ function renderIntegrations() {
   });
 }
 
+async function refreshIntegrationStatus() {
+  try {
+    const { data, error } = await adminClient.functions.invoke("dentalvibe-integrations", {
+      body: { action: "status" },
+    });
+    if (error) throw error;
+    integrations = integrations.map((integration) => ({
+      ...integration,
+      configured: data?.integrations?.[integration.provider]?.configured === true,
+    }));
+    renderIntegrations();
+  } catch (error) {
+    showFeedback(integrationFeedback, `Live provider status is unavailable. Check that the integrations Edge Function is deployed. ${error.message}`, true);
+  }
+}
+
 async function enterAdminDashboard() {
   if (!adminClient) {
     showLoggedOut("Supabase could not be initialized. Check the client script, project URL, and publishable key.");
@@ -314,6 +414,21 @@ async function enterAdminDashboard() {
     }
     showLoggedIn();
     await loadDashboard();
+    const calendarState = new URLSearchParams(window.location.search).get("calendar");
+    if (calendarState) {
+      showFeedback(
+        integrationFeedback,
+        calendarState === "connected"
+          ? "Google Calendar connected. Enable the integration to sync confirmed appointments."
+          : calendarState === "expired"
+          ? "Google Calendar authorization expired. Please start the connection again."
+          : calendarState === "wrong-account"
+          ? "Choose the clinic Google account to connect Calendar."
+          : "Google Calendar connection was not completed.",
+        calendarState !== "connected",
+      );
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   } catch (error) {
     const message = `Could not verify admin access: ${error.message}`;
     try {

@@ -34,7 +34,11 @@
     if (url !== config.url) return createClient(url, key, options);
     return createClient(url, key, {
       ...options,
-      auth: { ...options.auth, storageKey, storage },
+      auth: {
+        ...options.auth,
+        storageKey,
+        storage,
+      },
     });
   };
 

@@ -59,16 +59,21 @@
 .table-message { padding: 25px 10px !important; color: #859087; text-align: center; }
 .integration-security-note { margin-bottom: 16px; padding: 12px 14px; border-radius: 6px; background: #fcf4e9; color: #7d684f; font-size: 10px; line-height: 1.65; }
 .integration-security-note strong { color: #6b543c; }
+.integration-feedback { min-height: 0; margin: 0; color: var(--green); font-size: 10px; line-height: 1.6; }
+.integration-feedback:not(:empty) { margin: 0 0 12px; }
+.integration-feedback.error { color: #a3493d; }
 .integration-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .integration-card { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px; align-items: center; padding: 15px; border: 1px solid #e8ebe3; border-radius: 7px; }
 .integration-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #eaf3ed; color: var(--green); font-size: 14px; font-weight: 700; }
 .integration-details strong, .integration-details span { display: block; }
 .integration-details strong { margin-bottom: 4px; font-size: 10px; }
 .integration-details span { color: #859087; font-size: 8px; line-height: 1.5; }
-.integration-state { text-align: right; }
+.integration-state { display: grid; justify-items: end; gap: 5px; text-align: right; }
 .integration-state span { display: block; margin-bottom: 5px; color: #859087; font-size: 8px; }
-.integration-toggle { padding: 5px 8px; border: 1px solid #dfe4da; border-radius: 12px; background: white; color: #718077; cursor: pointer; font-size: 8px; font-weight: 700; }
+.integration-toggle, .integration-connect { padding: 5px 8px; border: 1px solid #dfe4da; border-radius: 12px; background: white; color: #718077; cursor: pointer; font-size: 8px; font-weight: 700; }
 .integration-toggle[aria-pressed="true"] { border-color: #b6d6c1; background: #eaf3ed; color: #46775e; }
+.integration-toggle:disabled { cursor: not-allowed; opacity: .6; }
+.integration-connect { color: var(--green); }
 .clinic-settings-form { display: grid; grid-template-columns: 1fr 2fr; gap: 10px 14px; align-items: center; max-width: 650px; }
 .clinic-settings-form button { grid-column: 2; justify-self: start; min-height: 38px; font-size: 10px; }
 .admin-footer { display: flex; justify-content: space-between; gap: 14px; width: min(1120px, calc(100% - 48px)); margin: auto auto 0; padding: 18px 0; border-top: 1px solid #e7e9e1; color: #859087; font-size: 9px; }
@@ -109,6 +114,7 @@ body[data-theme="dark"] .integration-security-note strong { color: #f0dfc2; }
 body[data-theme="dark"] .integration-card { border-color: #35443b; }
 body[data-theme="dark"] .integration-icon { background: #2b4034; color: #a4d5b7; }
 body[data-theme="dark"] .integration-toggle[aria-pressed="true"] { background: #2b4034; color: #a4d5b7; }
+body[data-theme="dark"] .integration-toggle, body[data-theme="dark"] .integration-connect { background: #202f28; border-color: #45554b; color: #adcfb7; }
 body[data-theme="dark"] .admin-access-badge { background: #2b4034; color: #a4d5b7; }
 
 @media (max-width: 700px) {

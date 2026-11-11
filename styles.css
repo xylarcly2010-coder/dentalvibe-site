@@ -180,11 +180,16 @@ h1 > span, .section-heading h2 > span, .location-copy h2 > span { color: var(--g
 .new-booking p { margin: 3px 0 0; color: #879188; font-size: 9px; }
 .booking-form { display: grid; grid-template-columns: 1fr auto; gap: 7px 10px; margin-top: 13px; }
 .booking-form label { grid-column: 1 / -1; color: #63736a; font-size: 9px; font-weight: 700; }
-.booking-form select, .signin-modal input { width: 100%; min-width: 0; height: 39px; padding: 0 10px; border: 1px solid #e4e9e1; border-radius: 5px; background: #fff; color: var(--ink); font-size: 10px; outline: none; }
-.booking-form select:focus, .signin-modal input:focus { border-color: #85ae98; box-shadow: 0 0 0 3px rgba(39,118,94,.09); }
+.booking-form select, .booking-form input[type="tel"], .signin-modal input { width: 100%; min-width: 0; height: 39px; padding: 0 10px; border: 1px solid #e4e9e1; border-radius: 5px; background: #fff; color: var(--ink); font-size: 10px; outline: none; }
+.booking-form select:focus, .booking-form input[type="tel"]:focus, .signin-modal input:focus { border-color: #85ae98; box-shadow: 0 0 0 3px rgba(39,118,94,.09); }
+#booking-phone { grid-column: 1 / -1; }
+.booking-form .booking-sms-consent { display: flex; grid-column: 1 / -1; align-items: flex-start; gap: 7px; color: #738077; font-size: 9px; font-weight: 400; line-height: 1.5; }
+.booking-sms-consent input { flex: 0 0 auto; margin: 1px 0 0; accent-color: var(--green); }
 .booking-submit { min-height: 39px; padding-inline: 12px; gap: 8px; font-size: 10px; white-space: nowrap; }
+.booking-payment-note { grid-column: 1 / -1; margin: 0; color: #7c8980; font-size: 9px; line-height: 1.55; }
 .booking-feedback { grid-column: 1 / -1; min-height: 0; margin: 0; color: var(--green); font-size: 10px; }
 .booking-feedback:not(:empty) { margin-top: 2px; }
+.booking-feedback.feedback-error { color: #a3493d; }
 
 .location-section { padding-top: 76px; padding-bottom: 77px; background: #fff; }
 .location-card { display: grid; grid-template-columns: .85fr 1.15fr; min-height: 350px; overflow: hidden; border-radius: 9px; background: #f4f6ef; }
@@ -222,6 +227,8 @@ h1 > span, .section-heading h2 > span, .location-copy h2 > span { color: var(--g
 .modal-backdrop[hidden] { display: none; }
 .signin-modal { position: relative; width: min(420px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; overscroll-behavior: contain; padding: 35px 36px 29px; border-radius: 10px; background: white; box-shadow: 0 25px 70px rgba(13,33,24,.23); }
 .modal-close { position: absolute; top: 13px; right: 16px; border: 0; background: transparent; color: #879188; font-size: 25px; cursor: pointer; }
+.modal-close[hidden], .signin-modal > .auth-back-button[hidden] { display: none; }
+.signin-modal > .auth-back-button { display: block; margin: -8px 0 15px; }
 .modal-logo { width: 40px; height: 40px; margin-bottom: 15px; }
 .modal-eyebrow { margin-bottom: 8px; }
 .signin-modal h2 { margin-bottom: 8px; font: 700 23px var(--serif); letter-spacing: -.7px; }
@@ -230,8 +237,12 @@ h1 > span, .section-heading h2 > span, .location-copy h2 > span { color: var(--g
 .signin-modal form[hidden], .account-panel[hidden], .signup-note[hidden],
 .account-overview[hidden], .account-settings[hidden], .two-factor-setup[hidden],
 .two-factor-disable[hidden], .settings-action[hidden] { display: none; }
+.forgot-password-button { justify-self: end; margin-top: -3px; }
 .signin-modal label { margin-top: 3px; color: #485b50; font-size: 10px; font-weight: 700; }
-.signin-modal .remember-option { display: inline-flex; align-items: center; justify-self: start; gap: 6px; width: fit-content; margin: 3px 0 0; cursor: pointer; } .signin-modal .remember-option input { flex: 0 0 12px; width: 12px; height: 12px; margin: 0; accent-color: var(--green); } .remember-option span { color: #647269; font-size: 9px; font-weight: 500; } .field-hint { color: #89948c; font-weight: 400; }
+.signin-modal .remember-option { display: inline-flex; align-items: center; justify-self: start; gap: 6px; width: fit-content; margin: 3px 0 0; cursor: pointer; }
+.signin-modal .remember-option input { flex: 0 0 12px; width: 12px; height: 12px; margin: 0; accent-color: var(--green); }
+.remember-option span { color: #647269; font-size: 9px; font-weight: 500; }
+.field-hint { color: #89948c; font-weight: 400; }
 .password-field { display: flex; align-items: center; overflow: hidden; border: 1px solid #e4e9e1; border-radius: 5px; background: #fff; }
 .password-field:focus-within { border-color: #85ae98; box-shadow: 0 0 0 3px rgba(39,118,94,.09); }
 .signin-modal .password-field input { min-width: 0; border: 0; box-shadow: none; }
@@ -419,7 +430,8 @@ body[data-theme="dark"] .review-rating,
 body[data-theme="dark"] .reviews-disclaimer,
 body[data-theme="dark"] .site-footer,
 body[data-theme="dark"] .site-footer > p span,
-body[data-theme="dark"] .signin-modal label, body[data-theme="dark"] .remember-option span,
+body[data-theme="dark"] .signin-modal label,
+body[data-theme="dark"] .remember-option span,
 body[data-theme="dark"] .modal-intro,
 body[data-theme="dark"] .signup-note,
 body[data-theme="dark"] .auth-storage-note,
@@ -461,7 +473,8 @@ body[data-theme="dark"] .two-factor-setup ol,
 body[data-theme="dark"] .form-help { color: #adbbb2; }
 body[data-theme="dark"] .two-factor-icon { background: #2b4034; color: #a4d5b7; }
 body[data-theme="dark"] .new-booking-icon { background: #35483c; color: #a4d5b7; }
-body[data-theme="dark"] .booking-form select { background-color: #202f28; border-color: #45554b; color: var(--ink); }
+body[data-theme="dark"] .booking-form select, body[data-theme="dark"] .booking-form input[type="tel"] { background-color: #202f28; border-color: #45554b; color: var(--ink); }
+body[data-theme="dark"] .booking-sms-consent, body[data-theme="dark"] .booking-payment-note { color: #adbbb2; }
 body[data-theme="dark"] .password-field { border-color: #45554b; }
 body[data-theme="dark"] .signin-modal .password-field input { background: transparent; color: var(--ink); }
 body[data-theme="dark"] .signin-modal input::placeholder { color: #84948a; }

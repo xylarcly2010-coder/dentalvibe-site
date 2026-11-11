@@ -97,8 +97,8 @@
           </div>
           <div class="table-wrap">
             <table class="data-table">
-              <thead><tr><th>Patient</th><th>Service</th><th>Date</th><th>Time</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead>
-              <tbody id="bookings-body"><tr><td colspan="7" class="table-message">Sign in to load bookings.</td></tr></tbody>
+              <thead><tr><th>Patient</th><th>Service</th><th>Date</th><th>Time</th><th>Status</th><th>Payment</th><th>Notes</th><th>Actions</th></tr></thead>
+              <tbody id="bookings-body"><tr><td colspan="8" class="table-message">Sign in to load bookings.</td></tr></tbody>
             </table>
           </div>
         </section>
@@ -107,15 +107,16 @@
           <div class="panel-heading"><div><h2 id="patients-title">Patients</h2><p>Contact details from booking requests. Patient records are derived from bookings.</p></div></div>
           <div class="table-wrap">
             <table class="data-table">
-              <thead><tr><th>Name</th><th>Email</th><th>Bookings</th><th>Last request</th></tr></thead>
-              <tbody id="patients-body"><tr><td colspan="4" class="table-message">Sign in to load patient contacts.</td></tr></tbody>
+              <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>SMS consent</th><th>Bookings</th><th>Last request</th></tr></thead>
+              <tbody id="patients-body"><tr><td colspan="6" class="table-message">Sign in to load patient contacts.</td></tr></tbody>
             </table>
           </div>
         </section>
 
         <section class="admin-panel" id="integrations-panel" hidden aria-labelledby="integrations-title">
           <div class="panel-heading"><div><h2 id="integrations-title">Integrations</h2><p>Control which clinic integrations are allowed to run.</p></div></div>
-          <div class="integration-security-note"><strong>Provider connections are not configured here.</strong> API credentials must be stored as server-side Supabase Edge Function secrets. Do not paste secret keys into this dashboard or browser config.</div>
+          <div class="integration-security-note"><strong>Keep provider credentials server-side.</strong> Add API credentials under Supabase → Edge Functions → Secrets. Never paste secret keys into this dashboard or browser config. Email uses Resend, SMS uses Twilio, and Calendar uses Google OAuth. GCash is manual only; the site does not verify payments.</div>
+          <p class="integration-feedback" id="integration-feedback" role="status"></p>
           <div class="integration-grid" id="integration-grid"></div>
         </section>
 

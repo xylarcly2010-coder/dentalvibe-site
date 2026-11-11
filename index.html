@@ -18,7 +18,8 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-    <script src="auth-session.js" defer></script>     <script src="script.js" defer></script>
+    <script src="auth-session.js" defer></script>
+    <script src="script.js" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -248,7 +249,14 @@
                   <option value="Tooth restoration">Tooth restoration (pasta)</option>
                   <option value="Dentures (Pustiso)">Dentures (pustiso)</option>
                 </select>
+                <label for="booking-phone">Mobile number <span class="field-hint">(optional)</span></label>
+                <input id="booking-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="+63 9XX XXX XXXX" />
+                <label class="booking-sms-consent" for="booking-sms-opt-in">
+                  <input id="booking-sms-opt-in" name="sms-opt-in" type="checkbox" />
+                  <span>I agree to receive appointment-related SMS messages. Message and data rates may apply.</span>
+                </label>
                 <button class="button button-primary booking-submit" type="submit">Request a booking <span>→</span></button>
+                <p class="booking-payment-note">GCash payment is arranged directly with the clinic after your appointment is confirmed. Please do not send payment before confirmation.</p>
                 <p class="booking-feedback" id="booking-feedback" role="status"></p>
               </form>
             </aside>
@@ -285,6 +293,7 @@
     <div class="modal-backdrop" id="signin-modal" hidden>
       <section class="signin-modal" role="dialog" aria-modal="true" aria-labelledby="signin-title">
         <button type="button" class="modal-close" aria-label="Close account dialog" data-close-signin>×</button>
+        <button type="button" class="text-button auth-back-button" id="back-from-register" hidden>← Back to sign in</button>
         <div class="modal-logo brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><path d="M20 5.5c-2.8 0-5.3 1.7-8.6 1.7C6.2 7.2 4.5 11 5.5 17c1.3 8 5.5 17.2 9.1 17.2 2.7 0 2.4-9.2 5.4-9.2s2.7 9.2 5.4 9.2c3.6 0 7.8-9.2 9.1-17.2 1-6-0.7-9.8-5.9-9.8-3.3 0-5.8-1.7-8.6-1.7Z" fill="currentColor"/><path d="M15.2 14.8h9.6M20 10v9.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
         <p class="eyebrow modal-eyebrow">WELCOME BACK</p>
         <h2 id="signin-title">Your smile, your schedule.</h2>
@@ -297,7 +306,32 @@
             <input id="signin-password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required minlength="8" />
             <button type="button" class="password-toggle" data-toggle-password="signin-password" aria-label="Show password" aria-pressed="false">Show</button>
           </div>
-          <label class="remember-option" for="signin-remember"><input id="signin-remember" name="remember" type="checkbox" checked /><span>Remember me on this device</span></label><button type="submit" class="button button-primary signin-submit">Sign in <span>→</span></button>
+          <button type="button" class="text-button forgot-password-button" id="forgot-password">Forgot password?</button>
+          <label class="remember-option" for="signin-remember">
+            <input id="signin-remember" name="remember" type="checkbox" checked />
+            <span>Remember me on this device</span>
+          </label>
+          <button type="submit" class="button button-primary signin-submit">Sign in <span>→</span></button>
+        </form>
+        <form id="forgot-password-form" hidden>
+          <label for="forgot-password-email">Email address</label>
+          <input id="forgot-password-email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required />
+          <button type="submit" class="button button-primary signin-submit">Send reset link <span>→</span></button>
+          <button type="button" class="text-button auth-back-button" id="back-from-forgot-password">Back to sign in</button>
+        </form>
+        <form id="reset-password-form" hidden>
+          <label for="reset-password">New password <span class="field-hint">(at least 8 characters)</span></label>
+          <div class="password-field">
+            <input id="reset-password" name="password" type="password" placeholder="Create a new password" autocomplete="new-password" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle-****** aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <label for="reset-confirm-password">Confirm new password</label>
+          <div class="password-field">
+            <input id="reset-confirm-password" name="confirm-password" type="password" placeholder="Enter your new password again" autocomplete="new-password" required minlength="8" />
+            <button type="button" class="password-toggle" data-toggle-****** aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <button type="submit" class="button button-primary signin-submit">Update password <span>→</span></button>
+          <button type="button" class="text-button auth-back-button" id="back-from-reset-password">Back to sign in</button>
         </form>
         <form id="totp-login-form" hidden>
           <label for="totp-login-code">Authenticator code</label>
@@ -321,7 +355,11 @@
             <input id="register-confirm-password" name="confirm-password" type="password" placeholder="Enter your password again" autocomplete="new-password" required minlength="8" />
             <button type="button" class="password-toggle" data-toggle-password="register-confirm-password" aria-label="Show password" aria-pressed="false">Show</button>
           </div>
-          <label class="remember-option" for="register-remember"><input id="register-remember" name="remember" type="checkbox" checked /><span>Remember me on this device</span></label><button type="submit" class="button button-primary signin-submit">Create account <span>→</span></button>
+          <label class="remember-option" for="register-remember">
+            <input id="register-remember" name="remember" type="checkbox" checked />
+            <span>Remember me on this device</span>
+          </label>
+          <button type="submit" class="button button-primary signin-submit">Create account <span>→</span></button>
         </form>
         <div class="account-panel" id="account-panel" hidden>
           <div id="account-overview" class="account-overview">
@@ -381,7 +419,6 @@
         </div>
         <p class="signin-feedback" id="signin-feedback" role="status"></p>
         <p class="signup-note" id="signup-note">New to Dentalvibe? <button type="button" class="text-button" id="create-account">Create an account</button></p>
-        <p class="signup-note" id="signin-note" hidden>Already have an account? <button type="button" class="text-button" id="switch-to-signin">Sign in</button></p>
         <p class="auth-storage-note">Accounts and names are stored securely with Supabase Auth; appointments are stored in the clinic database. “Remember me” keeps your sign-in on this device. Passwords are never stored by this site. Email confirmation may be required.</p>
       </section>
     </div>
