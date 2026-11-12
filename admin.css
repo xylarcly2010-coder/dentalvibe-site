@@ -31,7 +31,7 @@
 .stat-card strong { font: 700 25px var(--serif); }
 .admin-tabs { display: flex; gap: 5px; overflow-x: auto; border-bottom: 1px solid #e7e9e1; }
 .admin-tab { flex: 0 0 auto; padding: 11px 14px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718077; cursor: pointer; font-size: 11px; font-weight: 700; }
-.admin-tab:hover { color: var(--green); }
+.admin-tab:hover { color: var(--green); background: rgba(39,118,94,.05); }
 .admin-tab.active { border-bottom-color: var(--green); color: var(--green); }
 .admin-panel { margin-top: 24px; padding: 22px; border: 1px solid #e8ebe3; border-radius: 8px; background: #fff; }
 .admin-panel[hidden] { display: none; }
@@ -54,7 +54,7 @@
 .data-table .notes-input { min-width: 145px; }
 .row-actions { display: flex; gap: 5px; }
 .row-button { min-height: 30px; padding: 0 9px; border: 1px solid #dfe4da; border-radius: 5px; background: #fff; color: var(--green); cursor: pointer; font-size: 9px; font-weight: 700; }
-.row-button:hover { background: #f3f6ef; }
+.row-button:hover { background: #f3f6ef; box-shadow: 0 4px 10px rgba(32,52,46,.08); }
 .row-button.danger { color: #a3493d; }
 .table-message { padding: 25px 10px !important; color: #859087; text-align: center; }
 .integration-security-note { margin-bottom: 16px; padding: 12px 14px; border-radius: 6px; background: #fcf4e9; color: #7d684f; font-size: 10px; line-height: 1.65; }
@@ -74,8 +74,23 @@
 .integration-toggle[aria-pressed="true"] { border-color: #b6d6c1; background: #eaf3ed; color: #46775e; }
 .integration-toggle:disabled { cursor: not-allowed; opacity: .6; }
 .integration-connect { color: var(--green); }
-.clinic-settings-form { display: grid; grid-template-columns: 1fr 2fr; gap: 10px 14px; align-items: center; max-width: 650px; }
-.clinic-settings-form button { grid-column: 2; justify-self: start; min-height: 38px; font-size: 10px; }
+.clinic-settings-form { display: grid; gap: 16px; max-width: 900px; }
+.settings-group { margin: 0; padding: 16px; border: 1px solid #e8ebe3; border-radius: 8px; display: grid; grid-template-columns: minmax(160px, 220px) 1fr; gap: 10px 14px; align-items: start; }
+.settings-group legend { padding: 0 6px; font: 700 13px var(--serif); color: var(--ink); }
+.settings-group > label { padding-top: 10px; }
+.settings-group input, .settings-group textarea, .settings-group select { width: 100%; min-width: 0; min-height: 39px; padding: 9px 10px; border: 1px solid #e4e9e1; border-radius: 5px; background: white; color: var(--ink); font: inherit; font-size: 11px; outline: none; }
+.settings-group textarea { min-height: 70px; resize: vertical; line-height: 1.5; }
+.settings-group input:focus, .settings-group textarea:focus, .settings-group select:focus { border-color: #85ae98; box-shadow: 0 0 0 3px rgba(39,118,94,.09); }
+.settings-help { grid-column: 1 / -1; margin: 0; color: #7d8981; font-size: 10px; line-height: 1.6; }
+.settings-checkbox { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; padding-top: 2px !important; font-size: 11px; font-weight: 600; color: #58675e; cursor: pointer; }
+.settings-checkbox input { width: 16px; height: 16px; min-height: 16px; margin: 0; accent-color: var(--green); }
+.settings-hours .hours-grid { grid-column: 1 / -1; display: grid; gap: 6px; }
+.hours-row { display: grid; grid-template-columns: 110px 1fr 1fr 70px; gap: 8px; align-items: center; }
+.hours-row span, .hours-row label { font-size: 10px; color: #58675e; font-weight: 600; }
+.hours-head span, .hours-head label { color: #7d8981; font-size: 9px; text-transform: uppercase; letter-spacing: .4px; }
+.hours-row input[type="checkbox"] { justify-self: center; width: 16px; height: 16px; min-height: 16px; accent-color: var(--green); }
+.settings-actions { display: flex; justify-content: flex-start; }
+.settings-actions button { min-height: 40px; font-size: 11px; }
 .admin-footer { display: flex; justify-content: space-between; gap: 14px; width: min(1120px, calc(100% - 48px)); margin: auto auto 0; padding: 18px 0; border-top: 1px solid #e7e9e1; color: #859087; font-size: 9px; }
 
 body[data-theme="dark"] .admin-login-card,
@@ -87,10 +102,19 @@ body[data-theme="dark"] .panel-heading p,
 body[data-theme="dark"] .stat-card span,
 body[data-theme="dark"] .admin-login-form label,
 body[data-theme="dark"] .clinic-settings-form label,
+body[data-theme="dark"] .settings-group > label,
+body[data-theme="dark"] .settings-checkbox,
+body[data-theme="dark"] .hours-row span,
+body[data-theme="dark"] .hours-row label,
 body[data-theme="dark"] .table-toolbar label,
 body[data-theme="dark"] .back-to-site { color: #adbbb2; }
 body[data-theme="dark"] .admin-login-form input,
+body[data-theme="dark"] .settings-group,
 body[data-theme="dark"] .clinic-settings-form input,
+body[data-theme="dark"] .clinic-settings-form textarea,
+body[data-theme="dark"] .settings-group input,
+body[data-theme="dark"] .settings-group textarea,
+body[data-theme="dark"] .settings-group select,
 body[data-theme="dark"] .table-toolbar input,
 body[data-theme="dark"] .table-toolbar select,
 body[data-theme="dark"] .data-table input,
@@ -108,6 +132,7 @@ body[data-theme="dark"] .table-message,
 body[data-theme="dark"] .integration-details span,
 body[data-theme="dark"] .integration-state span,
 body[data-theme="dark"] .admin-security-note,
+body[data-theme="dark"] .settings-help,
 body[data-theme="dark"] .admin-footer { color: #adbbb2; }
 body[data-theme="dark"] .integration-security-note { background: #3b3326; color: #e3cda9; }
 body[data-theme="dark"] .integration-security-note strong { color: #f0dfc2; }
@@ -131,8 +156,15 @@ body[data-theme="dark"] .admin-access-badge { background: #2b4034; color: #a4d5b
   .admin-panel { padding: 15px 11px; }
   .table-toolbar { grid-template-columns: 1fr; }
   .integration-grid { grid-template-columns: 1fr; }
-  .clinic-settings-form { grid-template-columns: 1fr; gap: 7px; }
-  .clinic-settings-form label:not(:first-child) { margin-top: 7px; }
-  .clinic-settings-form button { grid-column: 1; }
+  .clinic-settings-form { gap: 12px; }
+  .settings-group { grid-template-columns: 1fr; gap: 7px; padding: 13px; }
+  .settings-group > label { padding-top: 4px; }
+  .settings-group legend { font-size: 12px; }
+  .hours-row { grid-template-columns: 1fr 1fr; gap: 6px 8px; padding: 8px 0; border-bottom: 1px solid #eef0ea; }
+  .hours-row:last-child { border-bottom: 0; }
+  .hours-head { display: none; }
+  .hours-row span { grid-column: 1 / -1; }
+  .hours-row input[type="checkbox"] { justify-self: start; }
+  body[data-theme="dark"] .hours-row { border-bottom-color: #35443b; }
   .admin-footer { width: calc(100% - 32px); flex-wrap: wrap; }
 }

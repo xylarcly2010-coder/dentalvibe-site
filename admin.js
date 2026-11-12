@@ -75,10 +75,77 @@ async function loadDashboard() {
   if (!bookingsResult.error) bookings = bookingsResult.data ?? [];
   if (!integrationsResult.error) integrations = integrationsResult.data ?? [];
   if (!settingsResult.error && settingsResult.data) {
-    const profile = settingsResult.data.setting_value;
-    document.querySelector("#clinic-name").value = profile.name ?? "";
-    document.querySelector("#clinic-location").value = profile.location ?? "";
-    document.querySelector("#clinic-phone").value = profile.phone ?? "";
+    const profile = settingsResult.data.setting_value || {};
+    const setValue = (id, value) => {
+      const el = document.querySelector(`#${id}`);
+      if (el) el.value = value ?? "";
+    };
+    const setChecked = (id, value) => {
+      const el = document.querySelector(`#${id}`);
+      if (el) el.checked = Boolean(value);
+    };
+
+    setValue("clinic-name", profile.name);
+    setValue("clinic-tagline", profile.tagline);
+    setValue("clinic-description", profile.description);
+    setValue("clinic-dentist-name", profile.dentistName);
+    setValue("clinic-dentist-title", profile.dentistTitle);
+    setValue("clinic-timezone", profile.timezone || "Asia/Manila");
+    setValue("clinic-language", profile.language || "English");
+
+    setValue("clinic-location", profile.location);
+    setValue("clinic-phone", profile.phone);
+    setValue("clinic-email", profile.email);
+    setValue("clinic-website", profile.website);
+    setValue("clinic-maps-url", profile.mapsUrl);
+    setValue("clinic-whatsapp", profile.whatsapp);
+    setValue("clinic-emergency-contact", profile.emergencyContact);
+
+    setValue("clinic-facebook", profile.facebook);
+    setValue("clinic-instagram", profile.instagram);
+    setValue("clinic-logo-url", profile.logoUrl);
+
+    const hours = profile.hours || {};
+    ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].forEach((day) => {
+      const row = hours[day] || {};
+      const open = document.querySelector(`[name="hours.${day}.open"]`);
+      const close = document.querySelector(`[name="hours.${day}.close"]`);
+      const closed = document.querySelector(`[name="hours.${day}.closed"]`);
+      if (open) open.value = row.open || "";
+      if (close) close.value = row.close || "";
+      if (closed) closed.checked = Boolean(row.closed);
+    });
+    setValue("clinic-holiday-note", profile.holidayNote);
+
+    setValue("clinic-slot-duration", profile.slotDurationMinutes ?? 30);
+    setValue("clinic-buffer-minutes", profile.bufferMinutes ?? 0);
+    setValue("clinic-advance-days", profile.advanceBookingDays ?? 30);
+    setValue("clinic-min-notice-hours", profile.minNoticeHours ?? 2);
+    setChecked("clinic-same-day", profile.sameDayBooking !== false);
+    setChecked("clinic-require-account", profile.requireAccount !== false);
+    setChecked("clinic-auto-confirm", profile.autoConfirmBookings === true);
+    setValue("clinic-cancellation-window", profile.cancellationNoticeHours ?? 24);
+    setValue("clinic-booking-instructions", profile.bookingInstructions);
+    setValue("clinic-new-patient-note", profile.newPatientNote);
+
+    setChecked("clinic-email-notifications", profile.emailNotifications !== false);
+    setChecked("clinic-sms-notifications", profile.smsNotifications === true);
+    setChecked("clinic-reminders-enabled", profile.remindersEnabled === true);
+    setValue("clinic-reminder-hours", profile.reminderHours ?? 24);
+    setValue("clinic-reply-to-email", profile.replyToEmail);
+    setValue("clinic-notification-phone", profile.notificationPhone);
+    setValue("clinic-confirmation-message", profile.confirmationMessage);
+
+    setValue("clinic-currency", profile.currency || "PHP");
+    setValue("clinic-payment-methods", profile.acceptedPaymentMethods || "Cash, GCash (manual)");
+    setValue("clinic-gcash-note", profile.gcashInstructions || "Arrange GCash directly with the clinic after confirmation. Do not send payment before confirmation.");
+    setValue("clinic-deposit-policy", profile.depositPolicy);
+    setValue("clinic-receipt-note", profile.receiptNote);
+
+    setValue("clinic-cancellation-policy", profile.cancellationPolicy);
+    setValue("clinic-privacy-policy", profile.privacyPolicy);
+    setValue("clinic-terms", profile.terms);
+    setValue("clinic-data-retention", profile.dataRetentionNote);
   }
   updateStats();
   renderBookings();
@@ -500,12 +567,83 @@ document.querySelectorAll(".admin-tab").forEach((tab) => {
 
 document.querySelector("#clinic-settings-form").addEventListener("submit", async (event) => {
   event.preventDefault();
-  const formData = new FormData(event.currentTarget);
-  const settingValue = {
-    name: String(formData.get("name")).trim(),
-    location: String(formData.get("location")).trim(),
-    phone: String(formData.get("phone")).trim(),
+  const form = event.currentTarget;
+  const formData = new FormData(form);
+  const text = (name) => String(formData.get(name) ?? "").trim();
+  const num = (name, fallback = null) => {
+    const value = String(formData.get(name) ?? "").trim();
+    if (value === "") return fallback;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
   };
+  const checked = (name) => formData.get(name) === "on";
+
+  const hours = {};
+  ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].forEach((day) => {
+    hours[day] = {
+      open: text(`hours.${day}.open`),
+      close: text(`hours.${day}.close`),
+      closed: checked(`hours.${day}.closed`),
+    };
+  });
+
+  const settingValue = {
+    name: text("name"),
+    tagline: text("tagline"),
+    description: text("description"),
+    dentistName: text("dentistName"),
+    dentistTitle: text("dentistTitle"),
+    timezone: text("timezone") || "Asia/Manila",
+    language: text("language") || "English",
+
+    location: text("location"),
+    phone: text("phone"),
+    email: text("email"),
+    website: text("website"),
+    mapsUrl: text("mapsUrl"),
+    whatsapp: text("whatsapp"),
+    emergencyContact: text("emergencyContact"),
+
+    facebook: text("facebook"),
+    instagram: text("instagram"),
+    logoUrl: text("logoUrl"),
+
+    hours,
+    holidayNote: text("holidayNote"),
+
+    slotDurationMinutes: num("slotDurationMinutes", 30),
+    bufferMinutes: num("bufferMinutes", 0),
+    advanceBookingDays: num("advanceBookingDays", 30),
+    minNoticeHours: num("minNoticeHours", 2),
+    sameDayBooking: checked("sameDayBooking"),
+    requireAccount: checked("requireAccount"),
+    autoConfirmBookings: checked("autoConfirmBookings"),
+    cancellationNoticeHours: num("cancellationNoticeHours", 24),
+    bookingInstructions: text("bookingInstructions"),
+    newPatientNote: text("newPatientNote"),
+
+    emailNotifications: checked("emailNotifications"),
+    smsNotifications: checked("smsNotifications"),
+    remindersEnabled: checked("remindersEnabled"),
+    reminderHours: num("reminderHours", 24),
+    replyToEmail: text("replyToEmail"),
+    notificationPhone: text("notificationPhone"),
+    confirmationMessage: text("confirmationMessage"),
+
+    currency: text("currency") || "PHP",
+    acceptedPaymentMethods: text("acceptedPaymentMethods"),
+    gcashInstructions: text("gcashInstructions"),
+    depositPolicy: text("depositPolicy"),
+    receiptNote: text("receiptNote"),
+
+    cancellationPolicy: text("cancellationPolicy"),
+    privacyPolicy: text("privacyPolicy"),
+    terms: text("terms"),
+    dataRetentionNote: text("dataRetentionNote"),
+  };
+
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
   try {
     const { error } = await adminClient.from("clinic_settings")
       .update({ setting_value: settingValue })
@@ -513,9 +651,11 @@ document.querySelector("#clinic-settings-form").addEventListener("submit", async
     if (error) throw error;
   } catch (error) {
     showFeedback(dashboardFeedback, `Could not save clinic settings: ${error.message}`, true);
+    if (submitButton) submitButton.disabled = false;
     return;
   }
-  showFeedback(dashboardFeedback, "Clinic profile saved.");
+  showFeedback(dashboardFeedback, "Clinic settings saved.");
+  if (submitButton) submitButton.disabled = false;
 });
 
 const themeButton = document.querySelector("#admin-theme-toggle");

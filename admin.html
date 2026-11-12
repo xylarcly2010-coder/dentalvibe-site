@@ -121,15 +121,137 @@
         </section>
 
         <section class="admin-panel" id="settings-panel" hidden aria-labelledby="settings-title">
-          <div class="panel-heading"><div><h2 id="settings-title">Clinic settings</h2><p>Update the clinic profile used by the administration system.</p></div></div>
+          <div class="panel-heading"><div><h2 id="settings-title">Clinic settings</h2><p>Manage clinic profile, hours, booking preferences, communications, payments, and policies. Provider secrets (Resend/Twilio/Google keys) remain in Supabase Edge Function Secrets, not in this form.</p></div></div>
           <form id="clinic-settings-form" class="clinic-settings-form">
-            <label for="clinic-name">Clinic name</label>
-            <input id="clinic-name" name="name" maxlength="120" required />
-            <label for="clinic-location">Location</label>
-            <input id="clinic-location" name="location" maxlength="200" required />
-            <label for="clinic-phone">Contact phone</label>
-            <input id="clinic-phone" name="phone" type="tel" maxlength="40" />
-            <button type="submit" class="button button-primary">Save clinic profile <span aria-hidden="true">→</span></button>
+            <fieldset class="settings-group">
+              <legend>Clinic profile</legend>
+              <label for="clinic-name">Clinic name</label>
+              <input id="clinic-name" name="name" maxlength="120" required />
+              <label for="clinic-tagline">Tagline</label>
+              <input id="clinic-tagline" name="tagline" maxlength="160" placeholder="Care that feels good" />
+              <label for="clinic-description">About / description</label>
+              <textarea id="clinic-description" name="description" maxlength="2000" rows="3" placeholder="Short description shown to patients"></textarea>
+              <label for="clinic-dentist-name">Lead dentist / provider name</label>
+              <input id="clinic-dentist-name" name="dentistName" maxlength="120" placeholder="Dr. Althea Sun" />
+              <label for="clinic-dentist-title">Provider title / credentials</label>
+              <input id="clinic-dentist-title" name="dentistTitle" maxlength="160" placeholder="Dentist · Davao Medical School Foundation" />
+              <label for="clinic-timezone">Timezone</label>
+              <input id="clinic-timezone" name="timezone" maxlength="60" placeholder="Asia/Manila" />
+              <label for="clinic-language">Preferred language</label>
+              <input id="clinic-language" name="language" maxlength="40" placeholder="English" />
+            </fieldset>
+
+            <fieldset class="settings-group">
+              <legend>Contact &amp; location</legend>
+              <label for="clinic-location">Address / location</label>
+              <input id="clinic-location" name="location" maxlength="200" required />
+              <label for="clinic-phone">Contact phone</label>
+              <input id="clinic-phone" name="phone" type="tel" maxlength="40" />
+              <label for="clinic-email">Contact email</label>
+              <input id="clinic-email" name="email" type="email" maxlength="254" placeholder="clinic@example.com" />
+              <label for="clinic-website">Website URL</label>
+              <input id="clinic-website" name="website" type="url" maxlength="300" placeholder="https://..." />
+              <label for="clinic-maps-url">Google Maps / directions URL</label>
+              <input id="clinic-maps-url" name="mapsUrl" type="url" maxlength="500" placeholder="https://maps.google.com/..." />
+              <label for="clinic-whatsapp">WhatsApp / messaging link or number</label>
+              <input id="clinic-whatsapp" name="whatsapp" maxlength="120" placeholder="+63..." />
+              <label for="clinic-emergency-contact">Emergency / after-hours contact</label>
+              <input id="clinic-emergency-contact" name="emergencyContact" maxlength="160" />
+            </fieldset>
+
+            <fieldset class="settings-group">
+              <legend>Online presence</legend>
+              <label for="clinic-facebook">Facebook page URL</label>
+              <input id="clinic-facebook" name="facebook" type="url" maxlength="300" />
+              <label for="clinic-instagram">Instagram URL</label>
+              <input id="clinic-instagram" name="instagram" type="url" maxlength="300" />
+              <label for="clinic-logo-url">Logo image URL (optional)</label>
+              <input id="clinic-logo-url" name="logoUrl" type="url" maxlength="500" />
+            </fieldset>
+
+            <fieldset class="settings-group settings-hours">
+              <legend>Operating hours</legend>
+              <p class="settings-help">Use 24-hour format (HH:MM) or leave blank when closed.</p>
+              <div class="hours-grid" role="group" aria-label="Weekly operating hours">
+                <div class="hours-row hours-head"><span>Day</span><span>Open</span><span>Close</span><label>Closed</label></div>
+                <div class="hours-row" data-day="monday"><span>Monday</span><input name="hours.monday.open" type="time" /><input name="hours.monday.close" type="time" /><input name="hours.monday.closed" type="checkbox" aria-label="Closed Monday" /></div>
+                <div class="hours-row" data-day="tuesday"><span>Tuesday</span><input name="hours.tuesday.open" type="time" /><input name="hours.tuesday.close" type="time" /><input name="hours.tuesday.closed" type="checkbox" aria-label="Closed Tuesday" /></div>
+                <div class="hours-row" data-day="wednesday"><span>Wednesday</span><input name="hours.wednesday.open" type="time" /><input name="hours.wednesday.close" type="time" /><input name="hours.wednesday.closed" type="checkbox" aria-label="Closed Wednesday" /></div>
+                <div class="hours-row" data-day="thursday"><span>Thursday</span><input name="hours.thursday.open" type="time" /><input name="hours.thursday.close" type="time" /><input name="hours.thursday.closed" type="checkbox" aria-label="Closed Thursday" /></div>
+                <div class="hours-row" data-day="friday"><span>Friday</span><input name="hours.friday.open" type="time" /><input name="hours.friday.close" type="time" /><input name="hours.friday.closed" type="checkbox" aria-label="Closed Friday" /></div>
+                <div class="hours-row" data-day="saturday"><span>Saturday</span><input name="hours.saturday.open" type="time" /><input name="hours.saturday.close" type="time" /><input name="hours.saturday.closed" type="checkbox" aria-label="Closed Saturday" /></div>
+                <div class="hours-row" data-day="sunday"><span>Sunday</span><input name="hours.sunday.open" type="time" /><input name="hours.sunday.close" type="time" /><input name="hours.sunday.closed" type="checkbox" aria-label="Closed Sunday" /></div>
+              </div>
+              <label for="clinic-holiday-note">Holiday / special closure note</label>
+              <textarea id="clinic-holiday-note" name="holidayNote" maxlength="500" rows="2" placeholder="Closed on public holidays unless announced."></textarea>
+            </fieldset>
+
+            <fieldset class="settings-group">
+              <legend>Booking &amp; appointments</legend>
+              <label for="clinic-slot-duration">Appointment slot duration (minutes)</label>
+              <input id="clinic-slot-duration" name="slotDurationMinutes" type="number" min="5" max="480" step="5" />
+              <label for="clinic-buffer-minutes">Buffer between appointments (minutes)</label>
+              <input id="clinic-buffer-minutes" name="bufferMinutes" type="number" min="0" max="120" step="5" />
+              <label for="clinic-advance-days">Max advance booking window (days)</label>
+              <input id="clinic-advance-days" name="advanceBookingDays" type="number" min="1" max="365" />
+              <label for="clinic-min-notice-hours">Minimum booking notice (hours)</label>
+              <input id="clinic-min-notice-hours" name="minNoticeHours" type="number" min="0" max="720" />
+              <label class="settings-checkbox" for="clinic-same-day"><input id="clinic-same-day" name="sameDayBooking" type="checkbox" /> Allow same-day booking requests</label>
+              <label class="settings-checkbox" for="clinic-require-account"><input id="clinic-require-account" name="requireAccount" type="checkbox" /> Require patient account to request booking</label>
+              <label class="settings-checkbox" for="clinic-auto-confirm"><input id="clinic-auto-confirm" name="autoConfirmBookings" type="checkbox" /> Auto-confirm bookings (otherwise requests require admin review)</label>
+              <label for="clinic-cancellation-window">Cancellation/reschedule notice (hours)</label>
+              <input id="clinic-cancellation-window" name="cancellationNoticeHours" type="number" min="0" max="168" />
+              <label for="clinic-booking-instructions">Booking instructions for patients</label>
+              <textarea id="clinic-booking-instructions" name="bookingInstructions" maxlength="1000" rows="2"></textarea>
+              <label for="clinic-new-patient-note">New patient intake / requirements note</label>
+              <textarea id="clinic-new-patient-note" name="newPatientNote" maxlength="1000" rows="2"></textarea>
+            </fieldset>
+
+            <fieldset class="settings-group">
+              <legend>Notifications &amp; reminders</legend>
+              <p class="settings-help">Delivery requires configured integrations and provider secrets; these settings store clinic preferences.</p>
+              <label class="settings-checkbox" for="clinic-email-notifications"><input id="clinic-email-notifications" name="emailNotifications" type="checkbox" /> Send email notifications for booking events</label>
+              <label class="settings-checkbox" for="clinic-sms-notifications"><input id="clinic-sms-notifications" name="smsNotifications" type="checkbox" /> Send SMS notifications when patient opts in</label>
+              <label class="settings-checkbox" for="clinic-reminders-enabled"><input id="clinic-reminders-enabled" name="remindersEnabled" type="checkbox" /> Send appointment reminders</label>
+              <label for="clinic-reminder-hours">Reminder lead time (hours before appointment)</label>
+              <input id="clinic-reminder-hours" name="reminderHours" type="number" min="1" max="168" />
+              <label for="clinic-reply-to-email">Reply-to / notification email (display preference)</label>
+              <input id="clinic-reply-to-email" name="replyToEmail" type="email" maxlength="254" placeholder="Configured via CLINIC_NOTIFICATION_EMAIL secret" />
+              <label for="clinic-notification-phone">Clinic SMS recipient (display preference)</label>
+              <input id="clinic-notification-phone" name="notificationPhone" type="tel" maxlength="40" placeholder="Configured via CLINIC_SMS_TO secret" />
+              <label for="clinic-confirmation-message">Confirmation message note / template text</label>
+              <textarea id="clinic-confirmation-message" name="confirmationMessage" maxlength="1000" rows="2"></textarea>
+            </fieldset>
+
+            <fieldset class="settings-group">
+              <legend>Payments &amp; billing</legend>
+              <label for="clinic-currency">Currency</label>
+              <input id="clinic-currency" name="currency" maxlength="10" placeholder="PHP" />
+              <label for="clinic-payment-methods">Accepted payment methods</label>
+              <input id="clinic-payment-methods" name="acceptedPaymentMethods" maxlength="200" placeholder="Cash, GCash (manual)" />
+              <label for="clinic-gcash-note">GCash / manual payment instructions</label>
+              <textarea id="clinic-gcash-note" name="gcashInstructions" maxlength="1000" rows="2" placeholder="Arrange GCash directly with the clinic after confirmation. Do not send payment before confirmation."></textarea>
+              <label for="clinic-deposit-policy">Deposit / prepayment policy</label>
+              <textarea id="clinic-deposit-policy" name="depositPolicy" maxlength="500" rows="2"></textarea>
+              <label for="clinic-receipt-note">Receipt / billing note</label>
+              <input id="clinic-receipt-note" name="receiptNote" maxlength="200" />
+            </fieldset>
+
+            <fieldset class="settings-group">
+              <legend>Policies &amp; compliance</legend>
+              <label for="clinic-cancellation-policy">Cancellation policy</label>
+              <textarea id="clinic-cancellation-policy" name="cancellationPolicy" maxlength="1500" rows="3"></textarea>
+              <label for="clinic-privacy-policy">Privacy policy URL or summary</label>
+              <textarea id="clinic-privacy-policy" name="privacyPolicy" maxlength="1500" rows="2"></textarea>
+              <label for="clinic-terms">Terms / consent note</label>
+              <textarea id="clinic-terms" name="terms" maxlength="1500" rows="2"></textarea>
+              <label for="clinic-data-retention">Data retention / records note</label>
+              <textarea id="clinic-data-retention" name="dataRetentionNote" maxlength="800" rows="2"></textarea>
+            </fieldset>
+
+            <div class="settings-actions">
+              <button type="submit" class="button button-primary">Save all settings <span aria-hidden="true">→</span></button>
+            </div>
           </form>
         </section>
       </section>

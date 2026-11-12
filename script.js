@@ -1,8 +1,56 @@
-const monthNames = [
+﻿const monthNames = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
 const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const CLIENT_SETTINGS_KEY = "dentalvibe.client-settings.v1";
+function defaultClientSettings() {
+  return {
+    defaultSmsOptIn: false,
+    preferredContact: "email",
+    emailReminders: true,
+    smsReminders: false,
+    reminderTiming: "24h",
+    preferredDay: "",
+    preferredTime: "",
+    language: "en",
+    savePhoneForBooking: true,
+    calendarPrompt: true,
+    specialRequests: "",
+    textSize: "default",
+    reducedMotion: false,
+    highContrast: false,
+    dateFormat: "locale",
+  };
+}
+function getClientSettings() {
+  try {
+    const raw = localStorage.getItem(CLIENT_SETTINGS_KEY);
+    return { ...defaultClientSettings(), ...(raw ? JSON.parse(raw) : {}) };
+  } catch (error) {
+    console.error("Could not read client settings.", error);
+    return defaultClientSettings();
+  }
+}
+function saveClientSettings(settings) {
+  try {
+    localStorage.setItem(CLIENT_SETTINGS_KEY, JSON.stringify(settings));
+  } catch (error) {
+    console.error("Could not save client settings.", error);
+  }
+  return settings;
+}
+function applyClientSettings(settings) {
+  const s = settings || getClientSettings();
+  const sizeMap = { default: "100%", large: "112%", xlarge: "125%" };
+  document.documentElement.style.fontSize = sizeMap[s.textSize] || "100%";
+  document.body.classList.toggle("reduced-motion", Boolean(s.reducedMotion));
+  document.body.classList.toggle("high-contrast", Boolean(s.highContrast));
+  document.documentElement.lang = s.language === "fil" ? "fil" : s.language === "ceb" ? "ceb" : "en";
+}
+applyClientSettings(getClientSettings());
+
+
 const THEME_STORAGE_KEY = "dentalvibe.theme.v1";
 const supabaseConfig = window.DENTALVIBE_SUPABASE_CONFIG;
 const supabaseClient = supabaseConfig && window.supabase?.createClient
@@ -208,11 +256,7 @@ function renderVisits() {
 function updateAuthControls() {
   document.querySelectorAll("[data-open-auth]").forEach((button) => {
     const label = currentAccount ? "My account" : button.dataset.signedOutLabel;
-    button.replaceChildren(document.createTextNode(label));
-    const arrow = document.createElement("span");
-    arrow.setAttribute("aria-hidden", "true");
-    arrow.textContent = currentAccount ? "●" : "↗";
-    button.append(arrow);
+    button.textContent = label;
   });
 }
 
@@ -243,13 +287,13 @@ function setAuthMode(mode) {
     : mode === "account" ? "Your Dentalvibe account."
       : mode === "forgot-password" ? "Reset your password."
         : mode === "update-password" ? "Choose a new password."
-          : mode === "totp-login" ? "Verify it’s you."
+          : mode === "totp-login" ? "Verify itâ€™s you."
             : "Your smile, your schedule.";
   intro.hidden = mode === "account";
   intro.textContent = mode === "register"
     ? "Create an account to save your details and keep your appointment requests together."
     : mode === "forgot-password"
-      ? "Enter the email address on your account and we’ll send you a password reset link."
+      ? "Enter the email address on your account and weâ€™ll send you a password reset link."
       : mode === "update-password"
         ? "Choose a new password for your Dentalvibe account."
         : mode === "totp-login"
@@ -295,6 +339,62 @@ async function showAccountOverview() {
   }
 }
 
+function switchClientSettingsPanel(panelId) {
+  document.querySelectorAll(".client-settings-tab").forEach((tab) => {
+    const active = tab.dataset.settingsPanel === panelId;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll(".client-settings-panel").forEach((panel) => {
+    const active = panel.id === panelId;
+    panel.classList.toggle("active", active);
+    panel.hidden = !active;
+  });
+}
+
+function populateClientSettingsForms() {
+  if (!currentAccount) return;
+  const profile = currentAccount.profile || {};
+  const setVal = (id, val) => { const el = document.querySelector(`#${id}`); if (el) el.value = val ?? ""; };
+  const setChk = (id, val) => { const el = document.querySelector(`#${id}`); if (el) el.checked = Boolean(val); };
+  const setSel = (id, val) => { const el = document.querySelector(`#${id}`); if (el && val !== undefined && val !== null) el.value = String(val); };
+
+  setVal("client-full-name", profile.fullName || currentAccount.name || "");
+  setVal("client-email", currentAccount.email || "");
+  setVal("client-phone", profile.phone || "");
+  setVal("client-birthdate", profile.birthdate || "");
+  setVal("client-address", profile.address || "");
+  setVal("client-emergency-name", profile.emergencyName || "");
+  setVal("client-emergency-phone", profile.emergencyPhone || "");
+  setVal("client-medical-notes", profile.medicalNotes || "");
+
+  const prefs = getClientSettings();
+  setChk("pref-default-sms-opt-in", prefs.defaultSmsOptIn);
+  setSel("pref-preferred-contact", prefs.preferredContact || "email");
+  setChk("pref-email-reminders", prefs.emailReminders !== false);
+  setChk("pref-sms-reminders", prefs.smsReminders);
+  setSel("pref-reminder-timing", prefs.reminderTiming || "24h");
+  setSel("pref-preferred-day", prefs.preferredDay || "");
+  setSel("pref-preferred-time", prefs.preferredTime || "");
+  setSel("pref-language", prefs.language || "en");
+  setChk("pref-save-phone", prefs.savePhoneForBooking !== false);
+  setChk("pref-calendar-add", prefs.calendarPrompt !== false);
+  setVal("pref-special-requests", prefs.specialRequests || "");
+
+  const isDark = document.body.dataset.theme === "dark";
+  setChk("client-dark-mode", isDark);
+  setSel("pref-text-size", prefs.textSize || "default");
+  setChk("pref-reduced-motion", prefs.reducedMotion);
+  setChk("pref-high-contrast", prefs.highContrast);
+  setSel("pref-date-format", prefs.dateFormat || "locale");
+
+  try {
+    const remember = localStorage.getItem("dentalvibe.auth.remember.v1") !== "false";
+    setChk("client-remember-device", remember);
+  } catch (e) { setChk("client-remember-device", true); }
+}
+
+
 function openAccountSettings() {
   if (!currentAccount) return;
   document.querySelector("#account-overview").hidden = true;
@@ -302,6 +402,8 @@ function openAccountSettings() {
   document.querySelector("#two-factor-setup").hidden = true;
   document.querySelector("#disable-two-factor-form").hidden = true;
   document.querySelector("#two-factor-qr").hidden = true;
+  populateClientSettingsForms();
+  switchClientSettingsPanel("settings-profile");
   setFeedback("");
   document.querySelector("#back-to-account").focus();
 }
@@ -381,7 +483,7 @@ function closeAuth() {
 }
 
 document.querySelectorAll("[data-open-auth]").forEach((button) => {
-  button.dataset.signedOutLabel = button.textContent.trim().replace(/\s*[↗]$/, "");
+  button.dataset.signedOutLabel = button.textContent.trim().replace(/\s*[â†—]$/, "");
   button.addEventListener("click", openAuth);
 });
 document.querySelector("[data-close-signin]").addEventListener("click", closeAuth);
@@ -428,6 +530,200 @@ document.querySelector("#cancel-totp-login").addEventListener("click", async () 
     setFeedback(`Could not cancel sign-in: ${error.message}`, true);
   }
 });
+document.querySelectorAll(".client-settings-tab").forEach((tab) => {
+  tab.addEventListener("click", () => switchClientSettingsPanel(tab.dataset.settingsPanel));
+});
+
+const clientProfileForm = document.querySelector("#client-profile-form");
+if (clientProfileForm) {
+  clientProfileForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!currentAccount || !supabaseClient) return;
+    const submitButton = clientProfileForm.querySelector('button[type="submit"]');
+    const formData = new FormData(clientProfileForm);
+    const fullName = String(formData.get("fullName") ?? "").trim();
+    if (!fullName) { setFeedback("Enter your full name to save your profile.", true); return; }
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const { data, error } = await supabaseClient.auth.updateUser({
+        data: {
+          full_name: fullName,
+          phone: String(formData.get("phone") ?? "").trim(),
+          birthdate: String(formData.get("birthdate") ?? "").trim(),
+          address: String(formData.get("address") ?? "").trim(),
+          emergency_name: String(formData.get("emergencyName") ?? "").trim(),
+          emergency_phone: String(formData.get("emergencyPhone") ?? "").trim(),
+          medical_notes: String(formData.get("medicalNotes") ?? "").trim(),
+        },
+      });
+      if (error) throw error;
+      const user = data?.user || (await supabaseClient.auth.getUser()).data?.user;
+      if (user) {
+        currentAccount.name = getAccountName(user);
+        currentAccount.profile = getAccountProfile(user);
+      } else {
+        currentAccount.name = fullName;
+      }
+      document.querySelector("#account-name").textContent = currentAccount.name;
+      document.querySelector("#account-avatar").textContent = currentAccount.name.trim().charAt(0).toUpperCase();
+      setFeedback("Profile saved to your account.");
+    } catch (error) {
+      setFeedback(`Could not save profile: ${error.message}`, true);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+}
+
+const clientPreferencesForm = document.querySelector("#client-preferences-form");
+if (clientPreferencesForm) {
+  clientPreferencesForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const fd = new FormData(clientPreferencesForm);
+    const checked = (name) => fd.get(name) === "on";
+    const val = (name) => String(fd.get(name) ?? "");
+    const settings = {
+      ...getClientSettings(),
+      defaultSmsOptIn: checked("defaultSmsOptIn"),
+      preferredContact: val("preferredContact") || "email",
+      emailReminders: checked("emailReminders"),
+      smsReminders: checked("smsReminders"),
+      reminderTiming: val("reminderTiming") || "24h",
+      preferredDay: val("preferredDay"),
+      preferredTime: val("preferredTime"),
+      language: val("language") || "en",
+      savePhoneForBooking: checked("savePhoneForBooking"),
+      calendarPrompt: checked("calendarPrompt"),
+      specialRequests: String(fd.get("specialRequests") ?? "").trim(),
+    };
+    saveClientSettings(settings);
+    applyClientSettings(settings);
+    setFeedback("Preferences saved on this device.");
+  });
+}
+
+const saveAppearanceButton = document.querySelector("#save-appearance-settings");
+if (saveAppearanceButton) {
+  saveAppearanceButton.addEventListener("click", () => {
+    const darkMode = Boolean(document.querySelector("#client-dark-mode")?.checked);
+    const textSize = String(document.querySelector("#pref-text-size")?.value || "default");
+    const reducedMotion = Boolean(document.querySelector("#pref-reduced-motion")?.checked);
+    const highContrast = Boolean(document.querySelector("#pref-high-contrast")?.checked);
+    const dateFormat = String(document.querySelector("#pref-date-format")?.value || "locale");
+    applyTheme(darkMode ? "dark" : "light");
+    savedTheme = darkMode ? "dark" : "light";
+    try { localStorage.setItem(THEME_STORAGE_KEY, savedTheme); } catch (e) { console.error(e); }
+    const settings = { ...getClientSettings(), textSize, reducedMotion, highContrast, dateFormat };
+    saveClientSettings(settings);
+    applyClientSettings(settings);
+    setFeedback("Appearance settings saved on this device.");
+  });
+}
+
+const clientDarkMode = document.querySelector("#client-dark-mode");
+if (clientDarkMode) {
+  clientDarkMode.addEventListener("change", () => {
+    const dark = clientDarkMode.checked;
+    applyTheme(dark ? "dark" : "light");
+    savedTheme = dark ? "dark" : "light";
+    try { localStorage.setItem(THEME_STORAGE_KEY, savedTheme); } catch (e) { console.error(e); }
+  });
+}
+
+const clientChangePasswordForm = document.querySelector("#client-change-password-form");
+if (clientChangePasswordForm) {
+  clientChangePasswordForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!supabaseClient) return;
+    const submitButton = clientChangePasswordForm.querySelector('button[type="submit"]');
+    const password = String(document.querySelector("#client-new-password")?.value || "");
+    const confirm = String(document.querySelector("#client-confirm-new-password")?.value || "");
+    if (password.length < 8) { setFeedback("Use at least 8 characters for your new password.", true); return; }
+    if (password !== confirm) { setFeedback("The passwords do not match. Please try again.", true); return; }
+    if (submitButton) submitButton.disabled = true;
+    try {
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) throw error;
+      clientChangePasswordForm.reset();
+      setFeedback("Your password has been updated.");
+    } catch (error) {
+      setFeedback(`Could not update password: ${error.message}`, true);
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+  });
+}
+
+const clientSendResetLink = document.querySelector("#client-send-reset-link");
+if (clientSendResetLink) {
+  clientSendResetLink.addEventListener("click", async () => {
+    if (!currentAccount?.email || !supabaseClient) return;
+    try {
+      const redirectUrl = window.DENTALVIBE_SUPABASE_CONFIG?.resetRedirectUrl || new URL("reset-password.html", window.location.href).href;
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(currentAccount.email, { redirectTo: redirectUrl });
+      if (error) throw error;
+      setFeedback("Password reset email sent. Open it to continue on the secure reset page.");
+    } catch (error) {
+      setFeedback(`Could not send reset email: ${error.message}`, true);
+    }
+  });
+}
+
+const clientSignoutDevice = document.querySelector("#client-signout-device");
+if (clientSignoutDevice) clientSignoutDevice.addEventListener("click", () => document.querySelector("#signout-button")?.click());
+const clientSignoutAll = document.querySelector("#client-signout-all");
+if (clientSignoutAll) {
+  clientSignoutAll.addEventListener("click", async () => {
+    if (!supabaseClient) return;
+    try {
+      const { error } = await supabaseClient.auth.signOut({ scope: "global" });
+      if (error) throw error;
+      closeAuth();
+    } catch (error) {
+      setFeedback(`Could not sign out of all devices: ${error.message}`, true);
+    }
+  });
+}
+
+const clientExportData = document.querySelector("#client-export-data");
+if (clientExportData) {
+  clientExportData.addEventListener("click", async () => {
+    if (!currentAccount || !supabaseClient) return;
+    try {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        account: { id: currentAccount.id, email: currentAccount.email, name: currentAccount.name, profile: currentAccount.profile || {}, metadata: userData?.user?.user_metadata || {} },
+        appointments: currentAppointments,
+        clientPreferences: getClientSettings(),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "dentalvibe-my-data.json";
+      document.body.append(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setFeedback("Your data export has been downloaded.");
+    } catch (error) {
+      setFeedback(`Could not export data: ${error.message}`, true);
+    }
+  });
+}
+
+const clientClearPreferences = document.querySelector("#client-clear-preferences");
+if (clientClearPreferences) {
+  clientClearPreferences.addEventListener("click", () => {
+    try { localStorage.removeItem(CLIENT_SETTINGS_KEY); } catch (e) {}
+    applyClientSettings(defaultClientSettings());
+    populateClientSettingsForms();
+    setFeedback("Local preferences cleared on this device. Account and clinic records were not changed.");
+  });
+}
+
+
 document.querySelector("#open-account-settings").addEventListener("click", openAccountSettings);
 document.querySelector("#back-to-account").addEventListener("click", () => {
   void showAccountOverview();
@@ -475,6 +771,19 @@ function getAccountName(user) {
   return String(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "Dentalvibe patient");
 }
 
+function getAccountProfile(user) {
+  const meta = user?.user_metadata || {};
+  return {
+    fullName: String(meta.full_name || meta.name || ""),
+    phone: String(meta.phone || ""),
+    birthdate: String(meta.birthdate || ""),
+    address: String(meta.address || ""),
+    emergencyName: String(meta.emergency_name || ""),
+    emergencyPhone: String(meta.emergency_phone || ""),
+    medicalNotes: String(meta.medical_notes || ""),
+  };
+}
+
 async function loadAppointments(userId) {
   requireSupabaseClient();
   const { data, error } = await supabaseClient
@@ -494,12 +803,23 @@ async function loadAppointments(userId) {
   renderVisits();
 }
 
+function applyBookingDefaultsFromSettings() {
+  const settings = getClientSettings();
+  if (settings.savePhoneForBooking && currentAccount?.profile?.phone && bookingPhone && !bookingPhone.value.trim()) {
+    bookingPhone.value = currentAccount.profile.phone;
+  }
+  if (settings.defaultSmsOptIn && bookingSmsOptIn) {
+    bookingSmsOptIn.checked = true;
+  }
+}
+
 async function completeSignIn(user) {
   if (!user?.id) throw new Error("Supabase did not return a signed-in user.");
   currentAccount = {
     id: user.id,
     name: getAccountName(user),
     email: user.email ?? "",
+    profile: getAccountProfile(user),
   };
   currentAppointments = [];
   pendingMfa = null;
@@ -507,6 +827,7 @@ async function completeSignIn(user) {
   updateAuthControls();
   renderCalendar();
   renderVisits();
+  applyBookingDefaultsFromSettings();
   setAuthMode("account");
   try {
     await loadAppointments(user.id);
@@ -586,7 +907,7 @@ document.querySelector("#signin-form").addEventListener("submit", async (event) 
     await continueSignedInUser(data.user);
   } catch (error) {
     if (error.message === "Invalid login credentials") {
-      setFeedback("Invalid email or password. If you’re new, create an account first.", true);
+      setFeedback("Invalid email or password. If youâ€™re new, create an account first.", true);
     } else {
       setFeedback(`Sign-in failed: ${error.message}`, true);
     }
@@ -624,7 +945,7 @@ document.querySelector("#reset-password-form").addEventListener("submit", async 
   const password = String(formData.get("password"));
   const confirmPassword = String(formData.get("confirm-password"));
   if (password !== confirmPassword) {
-    setFeedback("The passwords don’t match. Please try again.", true);
+    setFeedback("The passwords donâ€™t match. Please try again.", true);
     return;
   }
 
@@ -762,7 +1083,7 @@ document.querySelector("#register-form").addEventListener("submit", async (event
     return;
   }
   if (password !== confirmPassword) {
-    setFeedback("The passwords don’t match. Please try again.", true);
+    setFeedback("The passwords donâ€™t match. Please try again.", true);
     return;
   }
 
@@ -914,3 +1235,6 @@ updateAuthControls();
 renderCalendar();
 renderVisits();
 void initializeAuth();
+
+
+
